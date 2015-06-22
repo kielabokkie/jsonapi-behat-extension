@@ -15,7 +15,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Kielabokkie\\Behat": "src/"
+            "Kielabokkie\\Behat\\": "src/"
         }
     },
     "minimum-stability": "stable"
