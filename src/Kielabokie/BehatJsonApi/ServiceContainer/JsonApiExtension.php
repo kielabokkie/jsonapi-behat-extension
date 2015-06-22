@@ -1,4 +1,4 @@
-<?php namespace Kielabokkie\Behat\ServiceContainer;
+<?php namespace Kielabokkie\BehatJsonApi\ServiceContainer;
 
 use Behat\Behat\Context\ServiceContainer\ContextExtension;
 use Behat\Testwork\EventDispatcher\ServiceContainer\EventDispatcherExtension;
@@ -8,7 +8,7 @@ use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 
-class JsonApiExtension implements Extension
+class BehatJsonApiExtension implements Extension
 {
     /**
      * {@inheritdoc}

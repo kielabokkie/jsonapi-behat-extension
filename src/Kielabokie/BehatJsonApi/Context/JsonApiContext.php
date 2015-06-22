@@ -1,4 +1,4 @@
-<?php namespace Kielabokkie\Behat\Context;
+<?php namespace Kielabokkie\BehatJsonApi\Context;
 
 use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Gherkin\Node\PyStringNode;
