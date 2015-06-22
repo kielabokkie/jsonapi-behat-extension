@@ -4,6 +4,8 @@ use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Gherkin\Node\PyStringNode;
 use Buzz\Browser;
 use Buzz\Message\Request;
+use Exception;
+use PHPUnit_Framework_Assert as PHPUnit;
 
 /**
  * Defines application features from the specific context.
@@ -164,7 +166,7 @@ class JsonApiContext implements SnippetAcceptingContext
             $bodyOutput = sprintf("Expected 'application/json' content type but got '%' instead.", $contentType);
         }
 
-        PHPUnit_Framework_Assert::assertSame(intval($statusCode), $this->getResponse()->getStatusCode(), $bodyOutput);
+        PHPUnit::assertSame(intval($statusCode), $this->getResponse()->getStatusCode(), $bodyOutput);
     }
 
     /**
@@ -209,7 +211,7 @@ class JsonApiContext implements SnippetAcceptingContext
         $expected = explode("\n", (string) $propertiesString);
 
         foreach ($expected as $property) {
-            PHPUnit_Framework_Assert::assertArrayHasKey($property, $payload, sprintf(
+            PHPUnit::assertArrayHasKey($property, $payload, sprintf(
                 'Asserting the [%s] property exists in the scope [%s]: %s',
                 $property,
                 $this->scope,
@@ -219,7 +221,7 @@ class JsonApiContext implements SnippetAcceptingContext
             unset($payload[$property]);
         }
 
-        PHPUnit_Framework_Assert::assertEmpty($payload, sprintf(
+        PHPUnit::assertEmpty($payload, sprintf(
             'Unexpected properties [%s] found in payload: %s',
             implode(' ,', array_keys($payload)),
             json_encode($originalPayload)
@@ -233,7 +235,7 @@ class JsonApiContext implements SnippetAcceptingContext
     {
         $payload = (array)$this->getResponsePayload();
 
-        PHPUnit_Framework_Assert::assertEquals(
+        PHPUnit::assertEquals(
             count(array_keys((array)$payload[$property])),
             $count,
             sprintf("Asserting the [%s] property contains [%s] items", $property, $count)
@@ -248,7 +250,7 @@ class JsonApiContext implements SnippetAcceptingContext
         $payload = $this->getScopePayload();
         $actualValue = $this->arrayGet($payload, $property);
 
-        PHPUnit_Framework_Assert::assertTrue(
+        PHPUnit::assertTrue(
             is_array($actualValue),
             sprintf("Asserting the [%s] property in current scope [%s] is an array", $property, $this->scope)
         );
@@ -265,7 +267,7 @@ class JsonApiContext implements SnippetAcceptingContext
         $payload = $this->getScopePayload();
         $actualValue = $this->arrayGet($payload, $property);
 
-        PHPUnit_Framework_Assert::assertEquals(
+        PHPUnit::assertEquals(
             count(array_keys((array)$actualValue)),
             $count,
             sprintf('Asserting the [%s] array contains [%s] items', $property, $count)
