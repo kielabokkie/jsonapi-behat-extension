@@ -29,6 +29,14 @@ class BehatJsonApiExtension implements Extension
     /**
      * {@inheritdoc}
      */
+    public function process(ContainerBuilder $container)
+    {
+        //
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function configure(ArrayNodeDefinition $builder)
     {
         //
