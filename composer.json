@@ -1,0 +1,22 @@
+{
+    "name": "kielabokkie/jsonapi-behat-extension",
+    "description": "Behat extension for testing JSON APIs",
+    "type": "behat-extension",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Wouter Peschier",
+            "email": "kielabokkie@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4",
+        "behat/behat": "~3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kielabokkie\\Behat": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
