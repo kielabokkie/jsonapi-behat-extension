@@ -8,7 +8,7 @@ class JsonApiInitializer implements ContextInitializer
     private $baseUrl;
     private $parameters;
 
-    public function __construct(string $baseUrl, array $parameters)
+    public function __construct($baseUrl, array $parameters)
     {
         $this->baseUrl = $baseUrl;
         $this->parameters = $parameters;
