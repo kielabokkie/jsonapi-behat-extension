@@ -1,7 +1,7 @@
 <?php namespace Kielabokkie\BehatJsonApi\Context\Initializer;
 
 use Behat\Behat\Context\Initializer\ContextInitializer;
-use Behat\Behat\Context\ContextInterface;
+use Behat\Behat\Context\Context;
 
 class JsonApiInitializer implements ContextInitializer
 {
@@ -12,7 +12,7 @@ class JsonApiInitializer implements ContextInitializer
         $this->parameters = $parameters;
     }
 
-    public function initializeContext(ContextInterface $context)
+    public function initializeContext(Context $context)
     {
         // Add all parameters to the context
         $context->setParameters($this->parameters);
