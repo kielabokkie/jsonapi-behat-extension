@@ -5,16 +5,20 @@ use Behat\Behat\Context\Context;
 
 class JsonApiInitializer implements ContextInitializer
 {
+    private $baseUrl;
     private $parameters;
 
-    public function __construct(array $parameters)
+    public function __construct(string $baseUrl, array $parameters)
     {
+        $this->baseUrl = $baseUrl;
         $this->parameters = $parameters;
     }
 
     public function initializeContext(Context $context)
     {
-        // Add all parameters to the context
+        // Set the base url used for the tests
+        $context->setBaseUrl($this->baseUrl);
+        // Add all other parameters
         $context->setParameters($this->parameters);
     }
 }

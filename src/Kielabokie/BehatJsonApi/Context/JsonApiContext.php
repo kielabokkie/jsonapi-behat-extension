@@ -64,13 +64,10 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * Initialize the context
-     *
-     * The baseUrl and parameters are specified in the bahat.yml
      */
-    public function __construct($baseUrl, array $parameters)
+    public function __construct()
     {
-        $this->baseUrl = rtrim($baseUrl, '/');
-        $this->parameters = $parameters['parameters'];
+        // $this->parameters = $parameters['parameters'];
 
         // Start with the default set of headers
         $this->resetHeaders();
@@ -81,7 +78,17 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
-     * Set extension specific parameters specified in the behat.yml
+     * Set the base url (specified in behat.yml)
+     *
+     * @param string $baseUrl [description]
+     */
+    public function setBaseUrl(string $baseUrl)
+    {
+        $this->baseUrl = rtrim($baseUrl, '/');
+    }
+
+    /**
+     * Set extension specific parameters (specified in behat.yml)
      */
     public function setParameters(array $parameters)
     {
