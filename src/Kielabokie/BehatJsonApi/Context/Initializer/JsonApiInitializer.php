@@ -1,9 +1,9 @@
 <?php namespace Kielabokkie\BehatJsonApi\Context\Initializer;
 
-use Behat\Behat\Context\Initializer\InitializerInterface;
+use Behat\Behat\Context\Initializer\ContextInitializer;
 use Behat\Behat\Context\ContextInterface;
 
-class JsonApiInitializer implements InitializerInterface
+class JsonApiInitializer implements ContextInitializer
 {
     private $parameters;
 
