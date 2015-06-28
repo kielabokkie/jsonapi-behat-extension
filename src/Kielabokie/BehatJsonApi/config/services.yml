@@ -1,0 +1,17 @@
+parameters:
+  jsonapi.class: Kielabokkie\BehatJsonApi\ServiceContainer\BehatJsonApiExtension
+  jsonapi.context.initializer.class: Kielabokkie\BehatJsonApi\Context\Initializer\JsonApiInitializer
+
+services:
+  jsonapi:
+    class:  "%jsonapi.class%"
+    arguments:
+      - "%jsonapi.parameters%"
+
+  jsonapi.context.initializer:
+    class: "%jsonapi.context.initializer.class%"
+    arguments:
+      - @jsonapi
+      - %jsonapi.parameters%
+    tags:
+      -  { name: context.initializer }

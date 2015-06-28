@@ -81,6 +81,14 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
+     * Set extension specific parameters specified in the behat.yml
+     */
+    public function setParameters(array $parameters)
+    {
+        $this->parameters = $parameters;
+    }
+
+    /**
      * @Given I oauth with :username and :password
      */
     public function iOauthWithUsernameAndPassword($username, $password)

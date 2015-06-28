@@ -5,8 +5,10 @@ use Behat\Testwork\EventDispatcher\ServiceContainer\EventDispatcherExtension;
 use Behat\Testwork\ServiceContainer\Extension;
 use Behat\Testwork\ServiceContainer\ExtensionManager;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class BehatJsonApiExtension implements Extension
 {
@@ -39,7 +41,10 @@ class BehatJsonApiExtension implements Extension
      */
     public function configure(ArrayNodeDefinition $builder)
     {
-        //
+        $builder
+            ->children()
+                ->scalarNode('bla')
+                    ->defaultValue('gekke gerrit');
     }
 
     /**
@@ -47,6 +52,9 @@ class BehatJsonApiExtension implements Extension
      */
     public function load(ContainerBuilder $container, array $config)
     {
-        //
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../config'));
+        $loader->load('services.yml');
+
+        $container->setParameter('jsonapi.parameters', $config);
     }
 }
