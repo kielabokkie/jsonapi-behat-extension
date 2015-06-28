@@ -82,7 +82,7 @@ class JsonApiContext implements SnippetAcceptingContext
      *
      * @param string $baseUrl [description]
      */
-    public function setBaseUrl(string $baseUrl)
+    public function setBaseUrl($baseUrl)
     {
         $this->baseUrl = rtrim($baseUrl, '/');
     }
