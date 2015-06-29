@@ -67,8 +67,6 @@ class JsonApiContext implements SnippetAcceptingContext
      */
     public function __construct()
     {
-        // $this->parameters = $parameters['parameters'];
-
         // Start with the default set of headers
         $this->resetHeaders();
 
@@ -100,12 +98,12 @@ class JsonApiContext implements SnippetAcceptingContext
      */
     public function iOauthWithUsernameAndPassword($username, $password)
     {
-        if(isset($this->parameters['oauth']) === false) {
+        if (isset($this->parameters['oauth']) === false) {
             throw new Exception('OAuth details not found in your behat.yml file.');
         }
 
         $payload = [
-            "grant_type"    => "password",
+            "grant_type"    => $this->parameters['oauth']['grant_type'],
             "client_id"     => $this->parameters['oauth']['client_id'],
             "client_secret" => $this->parameters['oauth']['client_secret'],
             "username"      => $username,
@@ -127,7 +125,12 @@ class JsonApiContext implements SnippetAcceptingContext
             throw new Exception($errorMessage);
         }
 
-        $this->accessToken = $responseContent->access_token;
+        // Add authorization header if the OAuth config is set to use the bearer authentication scheme
+        if ($this->parameters['oauth']['use_bearer_token'] === true) {
+            $this->addHeader('Authorization', sprintf('Bearer %s', $responseContent->access_token));
+        } else {
+            $this->accessToken = $responseContent->access_token;
+        }
     }
 
     /**
@@ -143,13 +146,15 @@ class JsonApiContext implements SnippetAcceptingContext
      */
     public function iRequest($httpMethod, $resource)
     {
-        $this->addHeader('X-Test', 'Just a test');
-
         $method = strtolower($httpMethod);
 
-        $accessToken = is_null($this->accessToken) === false ? $this->accessToken : $this->parameters['access_token'];
+        $url = sprintf('%s%s', $this->baseUrl, $resource);
 
-        $url = sprintf('%s%s?access_token=%s', $this->baseUrl, $resource, $accessToken);
+        // If there is no authorization header we assume the access token should be passed as a GET parameter
+        if ($this->hasHeader('Authorization') === false) {
+            $accessToken = is_null($this->accessToken) === false ? $this->accessToken : $this->parameters['access_token'];
+            $url = sprintf('%s?access_token=%s', $url, $accessToken);
+        }
 
         switch ($httpMethod) {
             case 'PUT':
@@ -414,7 +419,18 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
-     * Get an item from an array using "dot" notation.
+     * Check if a header exists
+     *
+     * @param  string  $headerName
+     * @return boolean
+     */
+    private function hasHeader($headerName)
+    {
+        return isset($this->headers[$headerName]);
+    }
+
+    /**
+     * Get an item from an array using "dot" notation
      *
      * @link   http://laravel.com/docs/helpers
      * @param  array   $array
