@@ -53,14 +53,14 @@ class JsonApiContext implements SnippetAcceptingContext
      *
      *  @var array
      */
-    private $parameters = array();
+    protected $parameters = array();
 
     /**
      * Request headers
      *
      * @var array
      */
-    private $headers = array();
+    protected $headers = array();
 
     /**
      * Initialize the context
@@ -103,34 +103,30 @@ class JsonApiContext implements SnippetAcceptingContext
         }
 
         $payload = [
-            "grant_type"    => $this->parameters['oauth']['grant_type'],
-            "client_id"     => $this->parameters['oauth']['client_id'],
-            "client_secret" => $this->parameters['oauth']['client_secret'],
-            "username"      => $username,
-            "password"      => $password,
+            "grant_type" => 'password',
+            "username"   => $username,
+            "password"   => $password,
         ];
 
-        $url = sprintf('%s%s', $this->baseUrl, $this->parameters['oauth']['uri']);
+        $this->sendOauthRequest($payload);
+    }
 
-        $response = $this->client->post($url, $this->headers, json_encode($payload));
-        $responseContent = json_decode($response->getContent());
-
-        // Throw an exception if the statuscode is not 200
-        if ($response->getStatusCode() !== 200) {
-            $errorMessage = 'Authorization Error';
-            if (isset($responseContent->error_description) === true) {
-                $errorMessage = sprintf('%s: %s', $errorMessage, $responseContent->error_description);
-            }
-
-            throw new Exception($errorMessage);
+    /**
+     * @Given I oauth using the client credentials grant
+     */
+    public function iOauthUsingTheClientCredentialsGrant()
+    {
+        if (isset($this->parameters['oauth']) === false) {
+            throw new Exception('OAuth details not found in your behat.yml file.');
         }
 
-        // Add authorization header if the OAuth config is set to use the bearer authentication scheme
-        if ($this->parameters['oauth']['use_bearer_token'] === true) {
-            $this->addHeader('Authorization', sprintf('Bearer %s', $responseContent->access_token));
-        } else {
-            $this->accessToken = $responseContent->access_token;
-        }
+        $payload = [
+            "grant_type"    => 'client_credentials',
+            "client_id"     => $this->parameters['oauth']['client_id'],
+            "client_secret" => $this->parameters['oauth']['client_secret'],
+        ];
+
+        $this->sendOauthRequest($payload);
     }
 
     /**
@@ -335,17 +331,33 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
-     * Checks the response exists and returns it.
+     * Send an OAuth request to the API
      *
-     * @return  Guzzle\Http\Message\Response
+     * @param array $payload [description]
      */
-    private function getResponse()
+    protected function sendOauthRequest(array $payload)
     {
-        if (is_null($this->response) === true) {
-            throw new Exception("The response was not set.");
+        $url = sprintf('%s%s', $this->baseUrl, $this->parameters['oauth']['uri']);
+
+        $response = $this->client->post($url, $this->headers, json_encode($payload));
+        $responseContent = json_decode($response->getContent());
+
+        // Throw an exception if the statuscode is not 200
+        if ($response->getStatusCode() !== 200) {
+            $errorMessage = 'Authorization Error';
+            if (isset($responseContent->error_description) === true) {
+                $errorMessage = sprintf('%s: %s', $errorMessage, $responseContent->error_description);
+            }
+
+            throw new Exception($errorMessage);
         }
 
-        return $this->response;
+        // Add authorization header if the OAuth config is set to use the bearer authentication scheme
+        if ($this->parameters['oauth']['use_bearer_token'] === true) {
+            $this->addHeader('Authorization', sprintf('Bearer %s', $responseContent->access_token));
+        } else {
+            $this->accessToken = $responseContent->access_token;
+        }
     }
 
     /**
@@ -390,11 +402,25 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
+     * Checks the response exists and returns it.
+     *
+     * @return  Guzzle\Http\Message\Response
+     */
+    protected function getResponse()
+    {
+        if (is_null($this->response) === true) {
+            throw new Exception("The response was not set.");
+        }
+
+        return $this->response;
+    }
+
+    /**
      * Reset the headers to the default
      *
      * @return void
      */
-    private function resetHeaders()
+    protected function resetHeaders()
     {
         $this->headers = array();
 
@@ -413,7 +439,7 @@ class JsonApiContext implements SnippetAcceptingContext
      * @param string $headerName
      * @param string $headerValue
      */
-    private function addHeader($headerName, $headerValue)
+    protected function addHeader($headerName, $headerValue)
     {
         $this->headers[$headerName] = $headerValue;
     }
@@ -424,7 +450,7 @@ class JsonApiContext implements SnippetAcceptingContext
      * @param  string  $headerName
      * @return boolean
      */
-    private function hasHeader($headerName)
+    protected function hasHeader($headerName)
     {
         return isset($this->headers[$headerName]);
     }
