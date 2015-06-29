@@ -13,7 +13,7 @@ class JsonApiInitializer implements ContextInitializer
     /**
      * @var array
      */
-    private array $parameters;
+    private $parameters;
 
     /**
      * Default constructor
