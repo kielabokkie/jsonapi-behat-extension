@@ -46,6 +46,7 @@ class BehatJsonApiExtension implements Extension
             ->children()
             ->scalarNode('base_url')->defaultValue('http://localhost')->end()
             ->arrayNode('parameters')
+                ->addDefaultsIfNotSet()
                 ->children()
                     ->scalarNode('access_token')->end()
                     ->arrayNode('oauth')
