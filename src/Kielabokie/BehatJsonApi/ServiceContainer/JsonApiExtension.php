@@ -54,7 +54,7 @@ class BehatJsonApiExtension implements Extension
                         ->children()
                             ->scalarNode('uri')->defaultValue('/v1/oauth/token')->end()
                             ->scalarNode('client_id')->defaultValue('testclient')->end()
-                            ->scalarNode('client_secret')->defaultValue('testpass')->end()
+                            ->scalarNode('client_secret')->defaultValue('testsecret')->end()
                             ->booleanNode('use_bearer_token')->defaultValue(false)->end()
                         ->end()
                     ->end()
