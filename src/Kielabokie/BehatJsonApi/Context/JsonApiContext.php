@@ -194,6 +194,16 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
+     * @Then scope into the first :scope element
+     */
+    public function scopeIntoTheFirstElement($scope)
+    {
+        $payload = $this->getScopePayload($this->scope);
+
+        $this->scope = sprintf('%s.%s.0', $this->scope, $scope);
+    }
+
+    /**
      * Returns the payload from the current scope within the response
      *
      * @return mixed
@@ -245,20 +255,6 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
-     * @Then the :field property in the response contains :count items
-     */
-    public function thePropertyInTheResponseContainsItems($property, $count)
-    {
-        $payload = (array)$this->getResponsePayload();
-
-        PHPUnit::assertEquals(
-            count(array_keys((array)$payload[$property])),
-            $count,
-            sprintf("Asserting the [%s] property contains [%s] items", $property, $count)
-        );
-    }
-
-    /**
      * @Then the :field property is an array
      */
     public function thePropertyIsAnArray($property)
@@ -287,6 +283,117 @@ class JsonApiContext implements SnippetAcceptingContext
             count(array_keys((array)$actualValue)),
             $count,
             sprintf('Asserting the [%s] array contains [%s] items', $property, $count)
+        );
+    }
+
+    /**
+     * @Then the :field property is an empty array
+     */
+    public function thePropertyIsAnEmptyArray($property)
+    {
+        $payload = $this->getScopePayload();
+        $scopePayload = $this->arrayGet($payload, $property);
+
+        PHPUnit::assertTrue(
+            is_array($scopePayload) && $scopePayload === [],
+            sprintf("Asserting the [%s] property in current scope [%s] is an empty array", $property, $this->scope)
+        );
+    }
+
+    /**
+     * @Then the :field property is an integer
+     */
+    public function thePropertyIsAnInteger($property)
+    {
+        $payload = $this->getScopePayload();
+
+        PHPUnit::assertInternalType(
+            'int',
+            $this->arrayGet($payload, $property),
+            sprintf("Asserting the [%s] property in current scope [%s] is an integer", $property, $this->scope)
+        );
+    }
+
+    /**
+     * @Then the :field property is a integer equalling :expectedValue
+     */
+    public function thePropertyIsAIntegerEqualling($property, $expectedValue)
+    {
+        $payload = $this->getScopePayload();
+        $actualValue = $this->arrayGet($payload, $property);
+
+        $this->thePropertyIsAnInteger($property);
+
+        PHPUnit::assertSame(
+            $actualValue,
+            (int) $expectedValue,
+            sprintf("Asserting the [%s] property in current scope [%s] is a string equalling [%s]", $property, $this->scope, $expectedValue)
+        );
+    }
+
+    /**
+     * @Then the :field property is a string
+     */
+    public function thePropertyIsAString($property)
+    {
+        $payload = $this->getScopePayload();
+
+        PHPUnit::assertInternalType(
+            'string',
+            $this->arrayGet($payload, $property),
+            sprintf("Asserting the [%s] property in current scope [%s] is a string", $property, $this->scope)
+        );
+    }
+
+    /**
+     * @Then the :field property is a string equalling :expectedValue
+     */
+    public function thePropertyIsAStringEqualling($property, $expectedValue)
+    {
+        $payload = $this->getScopePayload();
+        $actualValue = $this->arrayGet($payload, $property);
+
+        $this->thePropertyIsAString($property);
+
+        PHPUnit::assertSame(
+            $actualValue,
+            $expectedValue,
+            sprintf("Asserting the [%s] property in current scope [%s] is a string equalling [%s]", $property, $this->scope, $expectedValue)
+        );
+    }
+
+    /**
+     * @Then the :field property is a boolean
+     */
+    public function thePropertyIsABoolean($property)
+    {
+        $payload = $this->getScopePayload();
+
+        PHPUnit::assertInternalType(
+            'boolean',
+            $this->arrayGet($payload, $property),
+            sprintf("Asserting the [%s] property in current scope [%s] is a boolean", $property, $this->scope)
+        );
+    }
+
+    /**
+     * @Then the :field property is a boolean equalling :expectedValue
+     */
+    public function thePropertyIsABooleanEqualling($property, $expectedValue)
+    {
+        $payload = $this->getScopePayload();
+        $actualValue = $this->arrayGet($payload, $property);
+
+        if (in_array($expectedValue, ['true', 'false']) === false) {
+            throw new Exception("The expected value can only be 'true' or 'false'.");
+        }
+
+        $this->thePropertyIsABoolean($property);
+
+        PHPUnit::assertSame(
+            $actualValue,
+            $expectedValue === 'true',
+            sprintf("Asserting the [%s] property in current scope [%s] is a boolean equalling [%s]", $property, $this->scope, $expectedValue)
         );
     }
 
