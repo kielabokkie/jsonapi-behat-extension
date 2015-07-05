@@ -69,11 +69,7 @@ class FeatureContext extends JsonApiContext
 }
 ```
 
-When you've setup your FeatureContext class to extend this extension's context you can get list of available step definitions including examples by running the following command:
-
-    $ vendor/bin/behat -di
-
-Below is the simplified list of available definitions:
+When you've made the changes above to your FeatureContext class you get access to the following step definitions:
 
     Given I oauth with :username and :password
     Given I oauth using the client credentials grant
@@ -94,3 +90,8 @@ Below is the simplified list of available definitions:
     Then the :field property is a boolean equaling/equalling :expected
     Then /^echo last request$/
     Then /^echo last response$
+
+
+To get a list of all available step definitions including examples you can run the following command:
+
+    $ vendor/bin/behat -di
