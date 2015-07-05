@@ -94,6 +94,38 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
+     * @Given I use the access token
+     *
+     * Use the access token specified in the behat.yml file
+     * -
+     * Example:
+     * Given I use the access token
+     */
+    public function iUseTheAccessToken()
+    {
+        if (isset($this->parameters['access_token']) === false) {
+            throw new Exception('The access token is not found in the behat.yml file.');
+        }
+
+        // Set the authentication token
+        $this->setAuthentication($this->parameters['access_token']);
+    }
+
+    /**
+     * @Given I use access token :token
+     *
+     * Use the specified access token
+     * -
+     * Example:
+     * Given I use access token "90dabed99acef998fd3e35280f2a0a3c30c00c8d"
+     */
+    public function iUseAccessToken($accessToken)
+    {
+        // Set the authentication token
+        $this->setAuthentication($accessToken);
+    }
+
+    /**
      * @Given I oauth with :username and :password
      *
      * Acquire an OAuth access token using the 'password' grant
@@ -179,9 +211,8 @@ class JsonApiContext implements SnippetAcceptingContext
         $url = sprintf('%s%s', $this->baseUrl, $resource);
 
         // If there is no authorization header we assume the access token should be passed as a GET parameter
-        if ($this->hasHeader('Authorization') === false) {
-            $accessToken = is_null($this->accessToken) === false ? $this->accessToken : $this->parameters['access_token'];
-            $url = sprintf('%s?access_token=%s', $url, $accessToken);
+        if ($this->hasHeader('Authorization') === false && is_null($this->accessToken) === false) {
+            $url = sprintf('%s?access_token=%s', $url, $this->accessToken);
         }
 
         switch ($httpMethod) {
@@ -555,11 +586,22 @@ class JsonApiContext implements SnippetAcceptingContext
             throw new Exception($errorMessage);
         }
 
+        // Set the authentication token
+        $this->setAuthentication($responseContent->access_token);
+    }
+
+    /**
+     * Set the authentication token as a bearer token or as a normal access token
+     *
+     * @param string $accessToken
+     */
+    protected function setAuthentication($accessToken)
+    {
         // Add authorization header if the OAuth config is set to use the bearer authentication scheme
         if ($this->parameters['oauth']['use_bearer_token'] === true) {
-            $this->addHeader('Authorization', sprintf('Bearer %s', $responseContent->access_token));
+            $this->addHeader('Authorization', sprintf('Bearer %s', $accessToken));
         } else {
-            $this->accessToken = $responseContent->access_token;
+            $this->accessToken = $accessToken;
         }
     }
 

@@ -73,6 +73,8 @@ class FeatureContext extends JsonApiContext
 
 When you've made the changes above to your FeatureContext class you get access to the following step definitions:
 
+    Given I use the access token
+    Given I use access token :token
     Given I oauth with :username and :password
     Given I oauth using the client credentials grant
     Given I have the payload:
