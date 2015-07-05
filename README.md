@@ -73,27 +73,29 @@ class FeatureContext extends JsonApiContext
 
 When you've made the changes above to your FeatureContext class you get access to the following step definitions:
 
-    Given I use the access token
-    Given I use access token :token
-    Given I oauth with :username and :password
-    Given I oauth using the client credentials grant
-    Given I have the payload:
-    When /^I request "(GET|PUT|PATCH|POST|DELETE) ([^"]*)"$/
-    Then I get a :statuscode response
-    Then scope into the :scope property
-    Then scope into the first :scope element
-    Then the structure matches:
-    Then the :field property is an array
-    Then the :field property is an array with :count items
-    Then the :field property is an empty array
-    Then the :field property is an integer
-    Then the :field property is a integer equaling/equalling :expected
-    Then the :field property is a string
-    Then the :field property is a string equaling/equalling :expected
-    Then the :field property is a boolean
-    Then the :field property is a boolean equaling/equalling :expected
-    Then /^echo last request$/
-    Then /^echo last response$
+    @Given I use the access token
+    @Given I use access token :token
+    @Given I oauth with :username and :password
+    @Given I oauth with :username and :password and scope :scope
+    @Given I oauth using the client credentials grant
+    @Given I oauth using the client credentials grant with scope :scope
+    @Given I have the payload:
+    @When /^I request "(GET|PUT|PATCH|POST|DELETE) ([^"]*)"$/
+    @Then I get a :statuscode response
+    @Then scope into the :scope property
+    @Then scope into the first :scope element
+    @Then the structure matches:
+    @Then the :field property is an array
+    @Then the :field property is an array with :count items
+    @Then the :field property is an empty array
+    @Then the :field property is an integer
+    @Then the :field property is a integer equaling/equalling :expected
+    @Then the :field property is a string
+    @Then the :field property is a string equaling/equalling :expected
+    @Then the :field property is a boolean
+    @Then the :field property is a boolean equaling/equalling :expected
+    @Then /^echo last request$/
+    @Then /^echo last response$
 
 
 To get a list of all available step definitions including examples you can run the following command:

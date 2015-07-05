@@ -131,25 +131,26 @@ class JsonApiContext implements SnippetAcceptingContext
      * Acquire an OAuth access token using the 'password' grant
      * -
      * Example:
-     * Given I oauth with "email@yourdomain.com" and "password"
+     * Given I oauth with "email@yourdomain.com" and "p4ssw0rd"
      */
     public function iOauthWithUsernameAndPassword($username, $password)
     {
-        if (isset($this->parameters['oauth']) === false) {
-            throw new Exception('OAuth details not found in your behat.yml file.');
-        }
+        $payload = $this->createPasswordGrantPayload($username, $password);
 
-        $payload = [
-            "grant_type" => 'password',
-            "username"   => $username,
-            "password"   => $password,
-        ];
+        $this->sendOauthRequest($payload);
+    }
 
-        // Check if client credentials are required for the password grant
-        if ($this->parameters['oauth']['password_grant_requires_client_credentials'] === true) {
-            $payload["client_id"] = $this->parameters['oauth']['client_id'];
-            $payload["client_secret"] = $this->parameters['oauth']['client_secret'];
-        }
+    /**
+     * @Given I oauth with :username and :password and scope :scope
+     *
+     * Acquire an OAuth access token using the 'password' grant with specified scope
+     * -
+     * Example:
+     * Given I oauth with "email@yourdomain.com" and "p4ssw0rd" and scope "view edit"
+     */
+    public function iOauthWithUsernameAndPasswordAndScope($username, $password, $scope)
+    {
+        $payload = $this->createPasswordGrantPayload($username, $password, $scope);
 
         $this->sendOauthRequest($payload);
     }
@@ -164,15 +165,22 @@ class JsonApiContext implements SnippetAcceptingContext
      */
     public function iOauthUsingTheClientCredentialsGrant()
     {
-        if (isset($this->parameters['oauth']) === false) {
-            throw new Exception('OAuth details not found in your behat.yml file.');
-        }
+        $payload = $this->createClientCredentialsGrantPayload();
 
-        $payload = [
-            "grant_type"    => 'client_credentials',
-            "client_id"     => $this->parameters['oauth']['client_id'],
-            "client_secret" => $this->parameters['oauth']['client_secret'],
-        ];
+        $this->sendOauthRequest($payload);
+    }
+
+    /**
+     * @Given I oauth using the client credentials grant with scope :scope
+     *
+     * Acquire an OAuth access token using the 'client_credentials' grant with specified scope
+     * -
+     * Example:
+     * Given I oauth using the client credentials grant with scope "view edit"
+     */
+    public function iOauthUsingTheClientCredentialsGrantWithScope($scope)
+    {
+        $payload = $this->createClientCredentialsGrantPayload($scope);
 
         $this->sendOauthRequest($payload);
     }
@@ -562,6 +570,66 @@ class JsonApiContext implements SnippetAcceptingContext
         if (empty($response->getContent()) === false) {
             echo sprintf("\nContent: %s", $response->getContent());
         }
+    }
+
+    /**
+     * Create a payload for the password grant
+     *
+     * @param  string $username
+     * @param  string $password
+     * @param  string $scope
+     * @return array
+     */
+    protected function createPasswordGrantPayload($username, $password, $scope = null)
+    {
+        if (isset($this->parameters['oauth']) === false) {
+            throw new Exception('OAuth details not found in your behat.yml file.');
+        }
+
+        $payload = [
+            "grant_type" => 'password',
+            "username"   => $username,
+            "password"   => $password,
+        ];
+
+        // Add scope to payload if it is set
+        if (is_null($scope) === false) {
+            $payload['scope'] = $scope;
+        }
+
+        // Check if client credentials are required for the password grant
+        if ($this->parameters['oauth']['password_grant_requires_client_credentials'] === true) {
+            $payload["client_id"] = $this->parameters['oauth']['client_id'];
+            $payload["client_secret"] = $this->parameters['oauth']['client_secret'];
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Create a payload for the client credentials grant
+     *
+     * @param  string $scope
+     * @return array
+     */
+    public function createClientCredentialsGrantPayload($scope = null)
+    {
+        if (isset($this->parameters['oauth']) === false) {
+            throw new Exception('OAuth details not found in your behat.yml file.');
+        }
+
+        $payload = [
+            "grant_type"    => 'client_credentials',
+            "client_id"     => $this->parameters['oauth']['client_id'],
+            "client_secret" => $this->parameters['oauth']['client_secret'],
+        ];
+
+        // Add scope to payload if it is set
+        if (is_null($scope) === false) {
+            $payload['scope'] = $scope;
+        }
+
+        return $payload;
     }
 
     /**
