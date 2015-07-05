@@ -95,6 +95,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Given I oauth with :username and :password
+     *
+     * Acquire an OAuth access token using the 'password' grant
+     * -
+     * Example:
+     * Given I oauth with "email@yourdomain.com" and "password"
      */
     public function iOauthWithUsernameAndPassword($username, $password)
     {
@@ -113,6 +118,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Given I oauth using the client credentials grant
+     *
+     * Acquire an OAuth access token using the 'client_credentials' grant
+     * -
+     * Example:
+     * Given I oauth using the client credentials grant
      */
     public function iOauthUsingTheClientCredentialsGrant()
     {
@@ -131,6 +141,17 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Given I have the payload:
+     *
+     * Supply a JSON payload
+     * -
+     * Example:
+     *
+     * And I have the payload:
+     *   """
+     *   {
+     *     "comment": "This is a comment"
+     *   }
+     *   """
      */
     public function iHaveThePayload(PyStringNode $requestPayload)
     {
@@ -139,6 +160,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @When /^I request "(GET|PUT|PATCH|POST|DELETE) ([^"]*)"$/
+     *
+     * Call an API endpoint
+     * -
+     * Example:
+     * When I request "GET /v1/movies"
      */
     public function iRequest($httpMethod, $resource)
     {
@@ -170,6 +196,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Then I get a :statuscode response
+     *
+     * Check the status code of a response
+     * -
+     * Example:
+     * Then I get a 200 response
      */
     public function iGetAResponse($statusCode)
     {
@@ -187,6 +218,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Then scope into the :scope property
+     *
+     * Scope into a property of the current response
+     * -
+     * Example:
+     * Then scope into the "data" property
      */
     public function scopeIntoTheProperty($scope)
     {
@@ -195,6 +231,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Then scope into the first :scope element
+     *
+     * Scope into the first element of an array in the current response
+     * -
+     * Example:
+     * Then scope into the first "actors" element
      */
     public function scopeIntoTheFirstElement($scope)
     {
@@ -204,23 +245,17 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
-     * Returns the payload from the current scope within the response
-     *
-     * @return mixed
-     */
-    protected function getScopePayload()
-    {
-        $payload = $this->getResponsePayload();
-
-        if (is_null($this->scope) === true) {
-            return $payload;
-        }
-
-        return $this->arrayGet($payload, $this->scope);
-    }
-
-    /**
      * @Then the structure matches:
+     *
+     * Check if the structure of the response exactly matches
+     * -
+     * Example:
+     * And the structure matches:
+     *   """
+     *   title
+     *   release_date
+     *   genres
+     *   """
      */
     public function theStructureMatches(PyStringNode $propertiesString)
     {
@@ -256,6 +291,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Then the :field property is an array
+     *
+     * Checks if the specified field is an array
+     * -
+     * Example:
+     * And the "genres" property is an array
      */
     public function thePropertyIsAnArray($property)
     {
@@ -270,6 +310,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Then the :field property is an array with :count items
+     *
+     * Checks if the specified field is an array with a specified number of items
+     * -
+     * Example:
+     * And the "genres" property is an array with 4 items
      */
     public function thePropertyIsAnArrayWithItems($property, $count)
     {
@@ -288,6 +333,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Then the :field property is an empty array
+     *
+     * Checks if the specified field is an empty array
+     * -
+     * Example:
+     * And the "genres" property is an empty array
      */
     public function thePropertyIsAnEmptyArray($property)
     {
@@ -302,6 +352,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Then the :field property is an integer
+     *
+     * Checks if the specified field is an integer
+     * -
+     * Example:
+     * And the "id" property is an integer
      */
     public function thePropertyIsAnInteger($property)
     {
@@ -315,9 +370,14 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
-     * @Then the :field property is a integer equalling :expectedValue
+     * @Then the :field property is a integer equaling/equalling :expected
+     *
+     * Checks if the specified field is an integer with a specified value
+     * -
+     * Example:
+     * And the "id" property is an integer equaling 17
      */
-    public function thePropertyIsAIntegerEqualling($property, $expectedValue)
+    public function thePropertyIsAIntegerEqualing($property, $expected)
     {
         $payload = $this->getScopePayload();
         $actualValue = $this->arrayGet($payload, $property);
@@ -326,13 +386,18 @@ class JsonApiContext implements SnippetAcceptingContext
 
         PHPUnit::assertSame(
             $actualValue,
-            (int) $expectedValue,
-            sprintf("Asserting the [%s] property in current scope [%s] is a string equalling [%s]", $property, $this->scope, $expectedValue)
+            (int) $expected,
+            sprintf("Asserting the [%s] property in current scope [%s] is an integer equaling [%s]", $property, $this->scope, $expected)
         );
     }
 
     /**
      * @Then the :field property is a string
+     *
+     * Checks if the specified field is a string
+     * -
+     * Example:
+     * And the "title" property is a string
      */
     public function thePropertyIsAString($property)
     {
@@ -346,9 +411,14 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
-     * @Then the :field property is a string equalling :expectedValue
+     * @Then the :field property is a string equaling/equalling :expected
+     *
+     * Checks if the specified field is a string with a specified value
+     * -
+     * Example:
+     * And the "title" property is a string equaling "Pulp Fiction"
      */
-    public function thePropertyIsAStringEqualling($property, $expectedValue)
+    public function thePropertyIsAStringEqualing($property, $expected)
     {
         $payload = $this->getScopePayload();
         $actualValue = $this->arrayGet($payload, $property);
@@ -357,13 +427,18 @@ class JsonApiContext implements SnippetAcceptingContext
 
         PHPUnit::assertSame(
             $actualValue,
-            $expectedValue,
-            sprintf("Asserting the [%s] property in current scope [%s] is a string equalling [%s]", $property, $this->scope, $expectedValue)
+            $expected,
+            sprintf("Asserting the [%s] property in current scope [%s] is a string equaling [%s]", $property, $this->scope, $expected)
         );
     }
 
     /**
      * @Then the :field property is a boolean
+     *
+     * Checks if the specified field is a boolean
+     * -
+     * Example:
+     * And the "is_released" property is a boolean
      */
     public function thePropertyIsABoolean($property)
     {
@@ -377,14 +452,19 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
-     * @Then the :field property is a boolean equalling :expectedValue
+     * @Then the :field property is a boolean equaling/equalling :expected
+     *
+     * Checks if the specified field is a boolean with a specified value
+     * -
+     * Example:
+     * And the "is_released" property is a boolean equaling true
      */
-    public function thePropertyIsABooleanEqualling($property, $expectedValue)
+    public function thePropertyIsABooleanEqualing($property, $expected)
     {
         $payload = $this->getScopePayload();
         $actualValue = $this->arrayGet($payload, $property);
 
-        if (in_array($expectedValue, ['true', 'false']) === false) {
+        if (in_array($expected, ['true', 'false']) === false) {
             throw new Exception("The expected value can only be 'true' or 'false'.");
         }
 
@@ -392,13 +472,18 @@ class JsonApiContext implements SnippetAcceptingContext
 
         PHPUnit::assertSame(
             $actualValue,
-            $expectedValue === 'true',
-            sprintf("Asserting the [%s] property in current scope [%s] is a boolean equalling [%s]", $property, $this->scope, $expectedValue)
+            $expected === 'true',
+            sprintf("Asserting the [%s] property in current scope [%s] is a boolean equaling [%s]", $property, $this->scope, $expected)
         );
     }
 
     /**
      * @Then /^echo last request$/
+     *
+     * Echos the last request for debugging purposes
+     * -
+     * Example:
+     * And echo last request
      */
     public function echoLastRequest()
     {
@@ -420,6 +505,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Then /^echo last response$/
+     *
+     * Echos the last response for debugging purposes
+     * -
+     * Example:
+     * And echo last response
      */
     public function echoLastResponse()
     {
@@ -465,6 +555,22 @@ class JsonApiContext implements SnippetAcceptingContext
         } else {
             $this->accessToken = $responseContent->access_token;
         }
+    }
+
+    /**
+     * Returns the payload from the current scope within the response
+     *
+     * @return mixed
+     */
+    protected function getScopePayload()
+    {
+        $payload = $this->getResponsePayload();
+
+        if (is_null($this->scope) === true) {
+            return $payload;
+        }
+
+        return $this->arrayGet($payload, $this->scope);
     }
 
     /**

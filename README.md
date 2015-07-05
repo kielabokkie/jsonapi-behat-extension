@@ -2,17 +2,17 @@
 
 The JSON API Behat Extension provides step definitions for common testing scenarios specific to JSON APIs. It comes with easy ways to handle authentication through OAuth.
 
-** NOTE: This extension is still being developed and can't be installed as described below **
+**NOTE: This extension is still being developed and can't be installed as described below**
 
 ---
 
 ## Installation
 
-Recommended installation is by running the composer require command.
+Recommended installation is by running the composer require command. This will install the latest stable version of this extension.
 
     composer require kielabokkie/jsonapi-behat-extension --dev
 
-Or alternatively you can manually add the package to your composer.json file.
+Or alternatively you can manually add the package to your `composer.json` file.
 
     "require-dev": {
         "kielabokkie/jsonapi-behat-extension": "~1.0"
@@ -20,7 +20,7 @@ Or alternatively you can manually add the package to your composer.json file.
 
 ## Configuration
 
-To use this extension you will have to add it under the `extensions` in your behat.yml file.
+To use this extension you will have to add it under the `extensions` in your `behat.yml` file.
 
     default:
         extensions:
@@ -36,7 +36,7 @@ This will setup the extension with the following default parameters:
 | oauth_client_secret    | testsecret       |
 | oauth_use_bearer_token | false            |
 
-You can overwrite these parameters in the behat.yml file as needed.
+You can overwrite any of these parameters in the behat.yml file as needed.
 
     default:
         extensions:
@@ -46,12 +46,51 @@ You can overwrite these parameters in the behat.yml file as needed.
                     access_token: 90dabed99acef998fd3e35280f2a0a3c30c00c8d
                     oauth:
                         uri: /v1/oauth/token
-                        client_id: testclient
-                        client_secret: testpass
+                        client_id: myClientId
+                        client_secret: myClientSecret
                         use_bearer_token: true
 
 ## Usage
 
-To see a list of available step definitions:
+To use the step definitions provided by this extension you need to modify your `FeatureContext.php` file to extend the `JsonApiContext` instead of the standard `BehatContext`.
 
-    $ vendor/bin/behat -dl
+
+```php
+<?php
+
+use Kielabokkie\BehatJsonApi\Context\JsonApiContext;
+
+/**
+  * Defines application features from the specific context.
+  */
+class FeatureContext extends JsonApiContext
+{
+    ...
+}
+```
+
+When you've setup your FeatureContext class to extend this extension's context you can get list of available step definitions including examples by running the following command:
+
+    $ vendor/bin/behat -di
+
+Below is the simplified list of available definitions:
+
+    Given I oauth with :username and :password
+    Given I oauth using the client credentials grant
+    Given I have the payload:
+    When /^I request "(GET|PUT|PATCH|POST|DELETE) ([^"]*)"$/
+    Then I get a :statuscode response
+    Then scope into the :scope property
+    Then scope into the first :scope element
+    Then the structure matches:
+    Then the :field property is an array
+    Then the :field property is an array with :count items
+    Then the :field property is an empty array
+    Then the :field property is an integer
+    Then the :field property is a integer equaling/equalling :expected
+    Then the :field property is a string
+    Then the :field property is a string equaling/equalling :expected
+    Then the :field property is a boolean
+    Then the :field property is a boolean equaling/equalling :expected
+    Then /^echo last request$/
+    Then /^echo last response$
