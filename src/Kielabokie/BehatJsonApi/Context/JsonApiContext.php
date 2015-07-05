@@ -113,6 +113,12 @@ class JsonApiContext implements SnippetAcceptingContext
             "password"   => $password,
         ];
 
+        // Check if client credentials are required for the password grant
+        if ($this->parameters['oauth']['password_grant_requires_client_credentials'] === true) {
+            $payload["client_id"] = $this->parameters['oauth']['client_id'];
+            $payload["client_secret"] = $this->parameters['oauth']['client_secret'];
+        }
+
         $this->sendOauthRequest($payload);
     }
 

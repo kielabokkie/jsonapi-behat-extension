@@ -28,13 +28,14 @@ To use this extension you will have to add it under the `extensions` in your `be
 
 This will setup the extension with the following default parameters:
 
-| parameter              | value            |
-|------------------------|------------------|
-| base_url               | http://localhost |
-| oauth_uri              | /v1/oauth/token  |
-| oauth_client_id        | testclient       |
-| oauth_client_secret    | testsecret       |
-| oauth_use_bearer_token | false            |
+| parameter                                  | value            |
+|--------------------------------------------|------------------|
+| base_url                                   | http://localhost |
+| oauth_uri                                  | /v1/oauth/token  |
+| oauth_client_id                            | testclient       |
+| oauth_client_secret                        | testsecret       |
+| oauth_use_bearer_token                     | false            |
+| password_grant_requires_client_credentials | false            |
 
 You can overwrite any of these parameters in the behat.yml file as needed.
 
@@ -49,6 +50,7 @@ You can overwrite any of these parameters in the behat.yml file as needed.
                         client_id: myClientId
                         client_secret: myClientSecret
                         use_bearer_token: true
+                        password_grant_requires_client_credentials: true
 
 ## Usage
 
