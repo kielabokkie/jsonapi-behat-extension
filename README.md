@@ -26,31 +26,43 @@ To use this extension you will have to add it under the `extensions` in your `be
         extensions:
             Kielabokkie\BehatJsonApi: ~
 
-This will setup the extension with the following default parameters:
+### Default parameters
 
-| parameter                                  | value            |
-|--------------------------------------------|------------------|
-| base_url                                   | http://localhost |
-| oauth_uri                                  | /v1/oauth/token  |
-| oauth_client_id                            | testclient       |
-| oauth_client_secret                        | testsecret       |
-| oauth_use_bearer_token                     | false            |
-| password_grant_requires_client_credentials | false            |
+Out of the box this this extension has the following default parameters:
 
-You can overwrite any of these parameters in the behat.yml file as needed.
+| parameter                                        | value                 |
+|--------------------------------------------------|-----------------------|
+| base_url                                         | http://localhost:8000 |
+| oauth_uri                                        | /v1/oauth/token       |
+| oauth_client_id                                  | testclient            |
+| oauth_client_secret                              | testsecret            |
+| oauth_use_bearer_token                           | false                 |
+| oauth_password_grant_requires_client_credentials | false                 |
+
+You can overwrite any of these parameters in the `behat.yml` file as needed.
 
     default:
         extensions:
             Kielabokkie\BehatJsonApi:
                 base_url: http://api.yourapp.dev
                 parameters:
-                    access_token: 90dabed99acef998fd3e35280f2a0a3c30c00c8d
                     oauth:
                         uri: /v1/oauth/token
                         client_id: myClientId
                         client_secret: myClientSecret
                         use_bearer_token: true
                         password_grant_requires_client_credentials: true
+
+
+### Optional parameters
+
+To prevent having use OAuth to retrieve an access token for each API call you can also specify an optional `access_token` in the parameters:
+
+    default:
+        extensions:
+            Kielabokkie\BehatJsonApi:
+                parameters:
+                    access_token: 90dabed99acef998fd3e35280f2a0a3c30c00c8d
 
 ## Usage
 

@@ -44,7 +44,7 @@ class BehatJsonApiExtension implements Extension
         $builder
             ->addDefaultsIfNotSet()
             ->children()
-            ->scalarNode('base_url')->defaultValue('http://localhost')->end()
+            ->scalarNode('base_url')->defaultValue('http://localhost:8000')->end()
             ->arrayNode('parameters')
                 ->addDefaultsIfNotSet()
                 ->children()
