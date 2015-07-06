@@ -1,5 +1,8 @@
 # JSON API Behat Extension
 
+[![Author](http://img.shields.io/badge/by-@kielabokkie-lightgrey.svg?style=flat-square)](https://twitter.com/kielabokkie)
+[![Codacy Badge](https://img.shields.io/codacy/05bb81bdf72e4dfb8b78e76410ff7605.svg?style=flat-square)](https://www.codacy.com/app/kielabokkie/jsonapi-behat-extension)
+
 The JSON API Behat Extension provides step definitions for common testing scenarios specific to JSON APIs. It comes with easy ways to handle authentication through OAuth.
 
 **NOTE: This extension is still being developed and can't be installed as described below**
@@ -66,7 +69,7 @@ To prevent having use OAuth to retrieve an access token for each API call you ca
 
 ## Usage
 
-To use the step definitions provided by this extension you need to modify your `FeatureContext.php` file to extend the `JsonApiContext` instead of the standard `BehatContext`.
+To use the step definitions provided by this extension you need to modify your `FeatureContext.php` file to extend the `JsonApiContext` instead of the standard `BehatContext` and call the `parent::construct()` method in the constructor.
 
 
 ```php
@@ -79,7 +82,13 @@ use Kielabokkie\BehatJsonApi\Context\JsonApiContext;
   */
 class FeatureContext extends JsonApiContext
 {
-    ...
+    /**
+     * Initializes context.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+    }
 }
 ```
 
