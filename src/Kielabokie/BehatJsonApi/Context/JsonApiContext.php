@@ -252,10 +252,10 @@ class JsonApiContext implements SnippetAcceptingContext
         $response = $this->getResponse();
 
         $contentType = $response->getHeader('Content-Type');
-        if ($contentType === 'application/json') {
-            $bodyOutput = $response->getContent();
-        } else {
-            $bodyOutput = sprintf("Expected 'application/json' content type but got '%' instead.", $contentType);
+        $bodyOutput = $response->getContent();
+
+        if ($contentType !== 'application/json') {
+            $bodyOutput = sprintf("Expected 'application/json' content type but got '%s' instead.", $contentType);
         }
 
         PHPUnit::assertSame(intval($statusCode), $this->getResponse()->getStatusCode(), $bodyOutput);
@@ -284,8 +284,6 @@ class JsonApiContext implements SnippetAcceptingContext
      */
     public function scopeIntoTheFirstElement($scope)
     {
-        $payload = $this->getScopePayload($this->scope);
-
         $this->scope = sprintf('%s.%s.0', $this->scope, $scope);
     }
 
@@ -668,9 +666,10 @@ class JsonApiContext implements SnippetAcceptingContext
         // Add authorization header if the OAuth config is set to use the bearer authentication scheme
         if ($this->parameters['oauth']['use_bearer_token'] === true) {
             $this->addHeader('Authorization', sprintf('Bearer %s', $accessToken));
-        } else {
-            $this->accessToken = $accessToken;
+            return;
         }
+
+        $this->accessToken = $accessToken;
     }
 
     /**
