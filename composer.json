@@ -11,7 +11,8 @@
     ],
     "require": {
         "php": ">=5.4",
-        "behat/behat": "~3.0"
+        "behat/behat": "~3.0",
+        "kriswallsmith/buzz": "~0.14"
     },
     "autoload": {
         "psr-4": {
