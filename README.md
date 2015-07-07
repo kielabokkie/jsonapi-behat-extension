@@ -1,5 +1,7 @@
 # JSON API Behat Extension
 
+[![Join the chat at https://gitter.im/kielabokkie/jsonapi-behat-extension](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kielabokkie/jsonapi-behat-extension?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Author](http://img.shields.io/badge/by-@kielabokkie-lightgrey.svg?style=flat-square)](https://twitter.com/kielabokkie)
 [![Codacy Badge](https://img.shields.io/codacy/05bb81bdf72e4dfb8b78e76410ff7605.svg?style=flat-square)](https://www.codacy.com/app/kielabokkie/jsonapi-behat-extension)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
