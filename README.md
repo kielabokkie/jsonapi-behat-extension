@@ -3,23 +3,20 @@
 [![Author](http://img.shields.io/badge/by-@kielabokkie-lightgrey.svg?style=flat-square)](https://twitter.com/kielabokkie)
 [![Codacy Badge](https://img.shields.io/codacy/05bb81bdf72e4dfb8b78e76410ff7605.svg?style=flat-square)](https://www.codacy.com/app/kielabokkie/jsonapi-behat-extension)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
+[![Gitter](https://img.shields.io/badge/gitter-join%20chat-2DCD76.svg?style=flat-square)](https://gitter.im/kielabokkie/jsonapi-behat-extension)
 
 The JSON API Behat Extension provides step definitions for common testing scenarios specific to JSON APIs. It comes with easy ways to handle authentication through OAuth.
-
-**NOTE: This extension is still being developed and can't be installed as described below**
-
----
 
 ## Installation
 
 Recommended installation is by running the composer require command. This will install the latest stable version of this extension.
 
-    composer require kielabokkie/jsonapi-behat-extension --dev
+    composer require kielabokkie/jsonapi-behat-extension:1.0.*@beta --dev
 
 Or alternatively you can manually add the package to your `composer.json` file.
 
     "require-dev": {
-        "kielabokkie/jsonapi-behat-extension": "~1.0"
+        "kielabokkie/jsonapi-behat-extension": "1.0.*@beta"
     },
 
 ## Configuration
