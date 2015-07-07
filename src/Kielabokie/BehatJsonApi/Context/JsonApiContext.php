@@ -333,6 +333,25 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
+     * @Then the :field property is an object
+     *
+     * Checks if the specified field is an object
+     * -
+     * Example:
+     * And the "data" property is an object
+     */
+    public function thePropertyIsAnObject($property)
+    {
+        $payload = $this->getScopePayload();
+        $actualValue = $this->arrayGet($payload, $property);
+
+        PHPUnit::assertTrue(
+            is_object($actualValue),
+            sprintf("Asserting the [%s] property in current scope [%s] is an object", $property, $this->scope)
+        );
+    }
+
+    /**
      * @Then the :field property is an array
      *
      * Checks if the specified field is an array

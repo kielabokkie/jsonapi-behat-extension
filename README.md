@@ -107,6 +107,7 @@ When you've made the changes above to your FeatureContext class you get access t
     @Then scope into the :scope property
     @Then scope into the first :scope element
     @Then the structure matches:
+    @Then the :field property is an object
     @Then the :field property is an array
     @Then the :field property is an array with :count items
     @Then the :field property is an empty array
