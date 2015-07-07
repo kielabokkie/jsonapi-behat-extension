@@ -1,6 +1,7 @@
 # JSON API Behat Extension
 
 [![Author](http://img.shields.io/badge/by-@kielabokkie-lightgrey.svg?style=flat-square)](https://twitter.com/kielabokkie)
+[![Packagist Version](https://img.shields.io/packagist/v/kielabokkie/jsonapi-behat-extension.svg?style=flat-square)](https://packagist.org/packages/kielabokkie/jsonapi-behat-extension)
 [![Codacy Badge](https://img.shields.io/codacy/05bb81bdf72e4dfb8b78e76410ff7605.svg?style=flat-square)](https://www.codacy.com/app/kielabokkie/jsonapi-behat-extension)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![Gitter](https://img.shields.io/badge/gitter-join%20chat-2DCD76.svg?style=flat-square)](https://gitter.im/kielabokkie/jsonapi-behat-extension)
