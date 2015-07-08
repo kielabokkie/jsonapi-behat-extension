@@ -1,6 +1,7 @@
 {
     "name": "kielabokkie/jsonapi-behat-extension",
     "description": "Behat extension for testing JSON APIs",
+    "keywords": ["behat", "api", "json", "rest", "test", "context"],
     "type": "behat-extension",
     "license": "MIT",
     "authors": [
