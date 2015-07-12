@@ -81,13 +81,6 @@ use Kielabokkie\BehatJsonApi\Context\JsonApiContext;
   */
 class FeatureContext extends JsonApiContext
 {
-    /**
-     * Initializes context.
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
 }
 ```
 
@@ -99,6 +92,7 @@ When you've made the changes above to your FeatureContext class you get access t
     @Given I oauth with :username and :password and scope :scope
     @Given I oauth using the client credentials grant
     @Given I oauth using the client credentials grant with scope :scope
+    @Given I add a :header header with the value :value
     @Given I have the payload:
     @When /^I request "(GET|PUT|PATCH|POST|DELETE) ([^"]*)"$/
     @Then I get a :statuscode response
@@ -122,3 +116,51 @@ When you've made the changes above to your FeatureContext class you get access t
 To get a list of all available step definitions including examples you can run the following command:
 
     $ vendor/bin/behat -di
+
+### Override the base url
+
+In some cases you might want to override the base url for a specific suite. Below is an example of a `behat.yml` file. Here the custom url `http://hooks.yourapp.dev` is passed to the FeatureContext under the hooks suite.
+
+    default:
+        autoload:
+            - %paths.base%/tests/Behat/features/bootstrap
+        suites:
+            api:
+                paths:
+                    - %paths.base%/tests/Behat/features/api
+                contexts:
+                    - FeatureContext: ~
+            hooks:
+                paths:
+                    - %paths.base%/tests/Behat/features/hooks
+                contexts:
+                    - FeatureContext:
+                        - http://hooks.yourapp.dev
+        extensions:
+            Kielabokkie\BehatJsonApi: ~
+
+You also need to add the folling to the constructor of your `FeatureContext.php` class.
+
+```php
+<?php
+
+use Kielabokkie\BehatJsonApi\Context\JsonApiContext;
+
+/**
+ * Defines application features from the specific context.
+ */
+class FeatureContext extends JsonApiContext
+{
+    /**
+     * Initialize the context
+     */
+    public function __construct($baseUrl = null)
+    {
+        parent::__construct();
+
+        if (is_null($baseUrl) === false) {
+            $this->baseUrl = rtrim($baseUrl, '/');
+        }
+    }
+}
+```

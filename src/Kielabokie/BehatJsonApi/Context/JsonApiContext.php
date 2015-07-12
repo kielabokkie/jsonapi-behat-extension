@@ -82,7 +82,10 @@ class JsonApiContext implements SnippetAcceptingContext
      */
     public function setBaseUrl($baseUrl)
     {
-        $this->baseUrl = rtrim($baseUrl, '/');
+        // Only set the baseUrl if it's not already set
+        if (is_null($this->baseUrl) === true) {
+            $this->baseUrl = rtrim($baseUrl, '/');
+        }
     }
 
     /**
@@ -183,6 +186,19 @@ class JsonApiContext implements SnippetAcceptingContext
         $payload = $this->createClientCredentialsGrantPayload($scope);
 
         $this->sendOauthRequest($payload);
+    }
+
+    /**
+     * @Given I add a :header header with the value :value
+     *
+     * Set a header with a specified value
+     * -
+     * Example:
+     * Given I add a "X-My-Header" header with the value "bacon"
+     */
+    public function iAddAHeaderWithTheValue($header, $value)
+    {
+        $this->addHeader($header, $value);
     }
 
     /**
