@@ -300,7 +300,12 @@ class JsonApiContext implements SnippetAcceptingContext
      */
     public function scopeIntoTheFirstElement($scope)
     {
-        $this->scope = sprintf('%s.%s.0', $this->scope, $scope);
+        // Check if there is a current scope
+        if (is_null($this->scope) === true) {
+            $this->scope = sprintf('%s.0', $scope);
+        } else {
+            $this->scope = sprintf('%s.%s.0', $this->scope, $scope);
+        }
     }
 
     /**
