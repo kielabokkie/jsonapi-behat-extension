@@ -82,7 +82,10 @@ class JsonApiContext implements SnippetAcceptingContext
      */
     public function setBaseUrl($baseUrl)
     {
-        $this->baseUrl = rtrim($baseUrl, '/');
+        // Only set the baseUrl if it's not already set
+        if (is_null($this->baseUrl) === true) {
+            $this->baseUrl = rtrim($baseUrl, '/');
+        }
     }
 
     /**
@@ -94,43 +97,123 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
+     * @Given I use the access token
+     *
+     * Use the access token specified in the behat.yml file
+     * -
+     * Example:
+     * Given I use the access token
+     */
+    public function iUseTheAccessToken()
+    {
+        if (isset($this->parameters['access_token']) === false) {
+            throw new Exception('The access token is not found in the behat.yml file.');
+        }
+
+        // Set the authentication token
+        $this->setAuthentication($this->parameters['access_token']);
+    }
+
+    /**
+     * @Given I use access token :token
+     *
+     * Use the specified access token
+     * -
+     * Example:
+     * Given I use access token "90dabed99acef998fd3e35280f2a0a3c30c00c8d"
+     */
+    public function iUseAccessToken($accessToken)
+    {
+        // Set the authentication token
+        $this->setAuthentication($accessToken);
+    }
+
+    /**
      * @Given I oauth with :username and :password
+     *
+     * Acquire an OAuth access token using the 'password' grant
+     * -
+     * Example:
+     * Given I oauth with "email@yourdomain.com" and "p4ssw0rd"
      */
     public function iOauthWithUsernameAndPassword($username, $password)
     {
-        if (isset($this->parameters['oauth']) === false) {
-            throw new Exception('OAuth details not found in your behat.yml file.');
-        }
+        $payload = $this->createPasswordGrantPayload($username, $password);
 
-        $payload = [
-            "grant_type" => 'password',
-            "username"   => $username,
-            "password"   => $password,
-        ];
+        $this->sendOauthRequest($payload);
+    }
+
+    /**
+     * @Given I oauth with :username and :password and scope :scope
+     *
+     * Acquire an OAuth access token using the 'password' grant with specified scope
+     * -
+     * Example:
+     * Given I oauth with "email@yourdomain.com" and "p4ssw0rd" and scope "view edit"
+     */
+    public function iOauthWithUsernameAndPasswordAndScope($username, $password, $scope)
+    {
+        $payload = $this->createPasswordGrantPayload($username, $password, $scope);
 
         $this->sendOauthRequest($payload);
     }
 
     /**
      * @Given I oauth using the client credentials grant
+     *
+     * Acquire an OAuth access token using the 'client_credentials' grant
+     * -
+     * Example:
+     * Given I oauth using the client credentials grant
      */
     public function iOauthUsingTheClientCredentialsGrant()
     {
-        if (isset($this->parameters['oauth']) === false) {
-            throw new Exception('OAuth details not found in your behat.yml file.');
-        }
-
-        $payload = [
-            "grant_type"    => 'client_credentials',
-            "client_id"     => $this->parameters['oauth']['client_id'],
-            "client_secret" => $this->parameters['oauth']['client_secret'],
-        ];
+        $payload = $this->createClientCredentialsGrantPayload();
 
         $this->sendOauthRequest($payload);
     }
 
     /**
+     * @Given I oauth using the client credentials grant with scope :scope
+     *
+     * Acquire an OAuth access token using the 'client_credentials' grant with specified scope
+     * -
+     * Example:
+     * Given I oauth using the client credentials grant with scope "view edit"
+     */
+    public function iOauthUsingTheClientCredentialsGrantWithScope($scope)
+    {
+        $payload = $this->createClientCredentialsGrantPayload($scope);
+
+        $this->sendOauthRequest($payload);
+    }
+
+    /**
+     * @Given I add a :header header with the value :value
+     *
+     * Set a header with a specified value
+     * -
+     * Example:
+     * Given I add a "X-My-Header" header with the value "bacon"
+     */
+    public function iAddAHeaderWithTheValue($header, $value)
+    {
+        $this->addHeader($header, $value);
+    }
+
+    /**
      * @Given I have the payload:
+     *
+     * Supply a JSON payload
+     * -
+     * Example:
+     *
+     * And I have the payload:
+     *   """
+     *   {
+     *     "comment": "This is a comment"
+     *   }
+     *   """
      */
     public function iHaveThePayload(PyStringNode $requestPayload)
     {
@@ -139,6 +222,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @When /^I request "(GET|PUT|PATCH|POST|DELETE) ([^"]*)"$/
+     *
+     * Call an API endpoint
+     * -
+     * Example:
+     * When I request "GET /v1/movies"
      */
     public function iRequest($httpMethod, $resource)
     {
@@ -147,9 +235,8 @@ class JsonApiContext implements SnippetAcceptingContext
         $url = sprintf('%s%s', $this->baseUrl, $resource);
 
         // If there is no authorization header we assume the access token should be passed as a GET parameter
-        if ($this->hasHeader('Authorization') === false) {
-            $accessToken = is_null($this->accessToken) === false ? $this->accessToken : $this->parameters['access_token'];
-            $url = sprintf('%s?access_token=%s', $url, $accessToken);
+        if ($this->hasHeader('Authorization') === false && is_null($this->accessToken) === false) {
+            $url = sprintf('%s?access_token=%s', $url, $this->accessToken);
         }
 
         switch ($httpMethod) {
@@ -170,16 +257,21 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Then I get a :statuscode response
+     *
+     * Check the status code of a response
+     * -
+     * Example:
+     * Then I get a 200 response
      */
     public function iGetAResponse($statusCode)
     {
         $response = $this->getResponse();
 
         $contentType = $response->getHeader('Content-Type');
-        if ($contentType === 'application/json') {
-            $bodyOutput = $response->getContent();
-        } else {
-            $bodyOutput = sprintf("Expected 'application/json' content type but got '%' instead.", $contentType);
+        $bodyOutput = $response->getContent();
+
+        if ($contentType !== 'application/json') {
+            $bodyOutput = sprintf("Expected 'application/json' content type but got '%s' instead.", $contentType);
         }
 
         PHPUnit::assertSame(intval($statusCode), $this->getResponse()->getStatusCode(), $bodyOutput);
@@ -187,6 +279,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Then scope into the :scope property
+     *
+     * Scope into a property of the current response
+     * -
+     * Example:
+     * Then scope into the "data" property
      */
     public function scopeIntoTheProperty($scope)
     {
@@ -194,23 +291,35 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
-     * Returns the payload from the current scope within the response
+     * @Then scope into the first :scope element
      *
-     * @return mixed
+     * Scope into the first element of an array in the current response
+     * -
+     * Example:
+     * Then scope into the first "actors" element
      */
-    protected function getScopePayload()
+    public function scopeIntoTheFirstElement($scope)
     {
-        $payload = $this->getResponsePayload();
-
+        // Check if there is a current scope
         if (is_null($this->scope) === true) {
-            return $payload;
+            $this->scope = sprintf('%s.0', $scope);
+        } else {
+            $this->scope = sprintf('%s.%s.0', $this->scope, $scope);
         }
-
-        return $this->arrayGet($payload, $this->scope);
     }
 
     /**
      * @Then the structure matches:
+     *
+     * Check if the structure of the response exactly matches
+     * -
+     * Example:
+     * And the structure matches:
+     *   """
+     *   title
+     *   release_date
+     *   genres
+     *   """
      */
     public function theStructureMatches(PyStringNode $propertiesString)
     {
@@ -245,21 +354,31 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
-     * @Then the :field property in the response contains :count items
+     * @Then the :field property is an object
+     *
+     * Checks if the specified field is an object
+     * -
+     * Example:
+     * And the "data" property is an object
      */
-    public function thePropertyInTheResponseContainsItems($property, $count)
+    public function thePropertyIsAnObject($property)
     {
-        $payload = (array)$this->getResponsePayload();
+        $payload = $this->getScopePayload();
+        $actualValue = $this->arrayGet($payload, $property);
 
-        PHPUnit::assertEquals(
-            count(array_keys((array)$payload[$property])),
-            $count,
-            sprintf("Asserting the [%s] property contains [%s] items", $property, $count)
+        PHPUnit::assertTrue(
+            is_object($actualValue),
+            sprintf("Asserting the [%s] property in current scope [%s] is an object", $property, $this->scope)
         );
     }
 
     /**
      * @Then the :field property is an array
+     *
+     * Checks if the specified field is an array
+     * -
+     * Example:
+     * And the "genres" property is an array
      */
     public function thePropertyIsAnArray($property)
     {
@@ -274,6 +393,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Then the :field property is an array with :count items
+     *
+     * Checks if the specified field is an array with a specified number of items
+     * -
+     * Example:
+     * And the "genres" property is an array with 4 items
      */
     public function thePropertyIsAnArrayWithItems($property, $count)
     {
@@ -291,7 +415,158 @@ class JsonApiContext implements SnippetAcceptingContext
     }
 
     /**
+     * @Then the :field property is an empty array
+     *
+     * Checks if the specified field is an empty array
+     * -
+     * Example:
+     * And the "genres" property is an empty array
+     */
+    public function thePropertyIsAnEmptyArray($property)
+    {
+        $payload = $this->getScopePayload();
+        $scopePayload = $this->arrayGet($payload, $property);
+
+        PHPUnit::assertTrue(
+            is_array($scopePayload) && $scopePayload === [],
+            sprintf("Asserting the [%s] property in current scope [%s] is an empty array", $property, $this->scope)
+        );
+    }
+
+    /**
+     * @Then the :field property is an integer
+     *
+     * Checks if the specified field is an integer
+     * -
+     * Example:
+     * And the "id" property is an integer
+     */
+    public function thePropertyIsAnInteger($property)
+    {
+        $payload = $this->getScopePayload();
+
+        PHPUnit::assertInternalType(
+            'int',
+            $this->arrayGet($payload, $property),
+            sprintf("Asserting the [%s] property in current scope [%s] is an integer", $property, $this->scope)
+        );
+    }
+
+    /**
+     * @Then the :field property is a integer equaling/equalling :expected
+     *
+     * Checks if the specified field is an integer with a specified value
+     * -
+     * Example:
+     * And the "id" property is an integer equaling 17
+     */
+    public function thePropertyIsAIntegerEqualing($property, $expected)
+    {
+        $payload = $this->getScopePayload();
+        $actualValue = $this->arrayGet($payload, $property);
+
+        $this->thePropertyIsAnInteger($property);
+
+        PHPUnit::assertSame(
+            $actualValue,
+            (int) $expected,
+            sprintf("Asserting the [%s] property in current scope [%s] is an integer equaling [%s]", $property, $this->scope, $expected)
+        );
+    }
+
+    /**
+     * @Then the :field property is a string
+     *
+     * Checks if the specified field is a string
+     * -
+     * Example:
+     * And the "title" property is a string
+     */
+    public function thePropertyIsAString($property)
+    {
+        $payload = $this->getScopePayload();
+
+        PHPUnit::assertInternalType(
+            'string',
+            $this->arrayGet($payload, $property),
+            sprintf("Asserting the [%s] property in current scope [%s] is a string", $property, $this->scope)
+        );
+    }
+
+    /**
+     * @Then the :field property is a string equaling/equalling :expected
+     *
+     * Checks if the specified field is a string with a specified value
+     * -
+     * Example:
+     * And the "title" property is a string equaling "Pulp Fiction"
+     */
+    public function thePropertyIsAStringEqualing($property, $expected)
+    {
+        $payload = $this->getScopePayload();
+        $actualValue = $this->arrayGet($payload, $property);
+
+        $this->thePropertyIsAString($property);
+
+        PHPUnit::assertSame(
+            $actualValue,
+            $expected,
+            sprintf("Asserting the [%s] property in current scope [%s] is a string equaling [%s]", $property, $this->scope, $expected)
+        );
+    }
+
+    /**
+     * @Then the :field property is a boolean
+     *
+     * Checks if the specified field is a boolean
+     * -
+     * Example:
+     * And the "is_released" property is a boolean
+     */
+    public function thePropertyIsABoolean($property)
+    {
+        $payload = $this->getScopePayload();
+
+        PHPUnit::assertInternalType(
+            'boolean',
+            $this->arrayGet($payload, $property),
+            sprintf("Asserting the [%s] property in current scope [%s] is a boolean", $property, $this->scope)
+        );
+    }
+
+    /**
+     * @Then the :field property is a boolean equaling/equalling :expected
+     *
+     * Checks if the specified field is a boolean with a specified value
+     * -
+     * Example:
+     * And the "is_released" property is a boolean equaling true
+     */
+    public function thePropertyIsABooleanEqualing($property, $expected)
+    {
+        $payload = $this->getScopePayload();
+        $actualValue = $this->arrayGet($payload, $property);
+
+        if (in_array($expected, ['true', 'false']) === false) {
+            throw new Exception("The expected value can only be 'true' or 'false'.");
+        }
+
+        $this->thePropertyIsABoolean($property);
+
+        PHPUnit::assertSame(
+            $actualValue,
+            $expected === 'true',
+            sprintf("Asserting the [%s] property in current scope [%s] is a boolean equaling [%s]", $property, $this->scope, $expected)
+        );
+    }
+
+    /**
      * @Then /^echo last request$/
+     *
+     * Echos the last request for debugging purposes
+     * -
+     * Example:
+     * And echo last request
      */
     public function echoLastRequest()
     {
@@ -313,6 +588,11 @@ class JsonApiContext implements SnippetAcceptingContext
 
     /**
      * @Then /^echo last response$/
+     *
+     * Echos the last response for debugging purposes
+     * -
+     * Example:
+     * And echo last response
      */
     public function echoLastResponse()
     {
@@ -328,6 +608,66 @@ class JsonApiContext implements SnippetAcceptingContext
         if (empty($response->getContent()) === false) {
             echo sprintf("\nContent: %s", $response->getContent());
         }
+    }
+
+    /**
+     * Create a payload for the password grant
+     *
+     * @param  string $username
+     * @param  string $password
+     * @param  string $scope
+     * @return array
+     */
+    protected function createPasswordGrantPayload($username, $password, $scope = null)
+    {
+        if (isset($this->parameters['oauth']) === false) {
+            throw new Exception('OAuth details not found in your behat.yml file.');
+        }
+
+        $payload = [
+            "grant_type" => 'password',
+            "username"   => $username,
+            "password"   => $password,
+        ];
+
+        // Add scope to payload if it is set
+        if (is_null($scope) === false) {
+            $payload['scope'] = $scope;
+        }
+
+        // Check if client credentials are required for the password grant
+        if ($this->parameters['oauth']['password_grant_requires_client_credentials'] === true) {
+            $payload["client_id"] = $this->parameters['oauth']['client_id'];
+            $payload["client_secret"] = $this->parameters['oauth']['client_secret'];
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Create a payload for the client credentials grant
+     *
+     * @param  string $scope
+     * @return array
+     */
+    public function createClientCredentialsGrantPayload($scope = null)
+    {
+        if (isset($this->parameters['oauth']) === false) {
+            throw new Exception('OAuth details not found in your behat.yml file.');
+        }
+
+        $payload = [
+            "grant_type"    => 'client_credentials',
+            "client_id"     => $this->parameters['oauth']['client_id'],
+            "client_secret" => $this->parameters['oauth']['client_secret'],
+        ];
+
+        // Add scope to payload if it is set
+        if (is_null($scope) === false) {
+            $payload['scope'] = $scope;
+        }
+
+        return $payload;
     }
 
     /**
@@ -352,12 +692,40 @@ class JsonApiContext implements SnippetAcceptingContext
             throw new Exception($errorMessage);
         }
 
+        // Set the authentication token
+        $this->setAuthentication($responseContent->access_token);
+    }
+
+    /**
+     * Set the authentication token as a bearer token or as a normal access token
+     *
+     * @param string $accessToken
+     */
+    protected function setAuthentication($accessToken)
+    {
         // Add authorization header if the OAuth config is set to use the bearer authentication scheme
         if ($this->parameters['oauth']['use_bearer_token'] === true) {
-            $this->addHeader('Authorization', sprintf('Bearer %s', $responseContent->access_token));
-        } else {
-            $this->accessToken = $responseContent->access_token;
+            $this->addHeader('Authorization', sprintf('Bearer %s', $accessToken));
+            return;
         }
+
+        $this->accessToken = $accessToken;
+    }
+
+    /**
+     * Returns the payload from the current scope within the response
+     *
+     * @return mixed
+     */
+    protected function getScopePayload()
+    {
+        $payload = $this->getResponsePayload();
+
+        if (is_null($this->scope) === true) {
+            return $payload;
+        }
+
+        return $this->arrayGet($payload, $this->scope);
     }
 
     /**
