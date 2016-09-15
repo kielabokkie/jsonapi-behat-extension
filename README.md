@@ -92,6 +92,8 @@ When you've made the changes above to your FeatureContext class you get access t
     @Given I oauth with :username and :password and scope :scope
     @Given I oauth using the client credentials grant
     @Given I oauth using the client credentials grant with scope :scope
+    @Given I oauth using the client credentials grant with :id and :secret
+    @Given I oauth using the client credentials grant with :id and :secret and scope :scope
     @Given I add a :header header with the value :value
     @Given I have the payload:
     @When /^I request "(GET|PUT|PATCH|POST|DELETE) ([^"]*)"$/
