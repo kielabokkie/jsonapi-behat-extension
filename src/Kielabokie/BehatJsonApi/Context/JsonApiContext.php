@@ -187,6 +187,36 @@ class JsonApiContext implements SnippetAcceptingContext
 
         $this->sendOauthRequest($payload);
     }
+    
+    /**
+     * @Given I oauth using the client credentials grant with :id and :secret and scope :scope
+     *
+     * Acquire an OAuth access token using the 'client_credentials' grant with specified details
+     * -
+     * Example:
+     * Given I oauth using the client credentials grant with "oauth_id" and "oauth_secret" and scope "view edit"
+     */
+    public function iOauthUsingTheClientCredentialsGrantWithAllDetails($id, $secret, $scope)
+    {
+        $payload = $this->buildClientCredentialsGrantPayload($id, $secret, $scope);
+
+        $this->sendOauthRequest($payload);
+    }
+
+    /**
+     * @Given I oauth using the client credentials grant with :id and :secret
+     *
+     * Acquire an OAuth access token using the 'client_credentials' grant with specified details
+     * -
+     * Example:
+     * Given I oauth using the client credentials grant with "oauth_id" and "oauth_secret"
+     */
+    public function iOauthUsingTheClientCredentialsGrantWithAllDetailsExceptScope($id, $secret)
+    {
+        $payload = $this->buildClientCredentialsGrantPayload($id, $secret);
+
+        $this->sendOauthRequest($payload);
+    }
 
     /**
      * @Given I add a :header header with the value :value
@@ -660,6 +690,29 @@ class JsonApiContext implements SnippetAcceptingContext
             "grant_type"    => 'client_credentials',
             "client_id"     => $this->parameters['oauth']['client_id'],
             "client_secret" => $this->parameters['oauth']['client_secret'],
+        ];
+
+        // Add scope to payload if it is set
+        if (is_null($scope) === false) {
+            $payload['scope'] = $scope;
+        }
+
+        return $payload;
+    }
+    
+    /**
+     * Build a payload for the client credentials grant with the given variables
+     *
+     * @param  string $scope
+     *
+     * @return array
+     */
+    public function buildClientCredentialsGrantPayload($id, $secret, $scope = null)
+    {
+        $payload = [
+            "grant_type"    => 'client_credentials',
+            "client_id"     => $id,
+            "client_secret" => $secret,
         ];
 
         // Add scope to payload if it is set
