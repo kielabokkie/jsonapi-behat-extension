@@ -30,7 +30,7 @@ To use this extension you will have to add it under the `extensions` in your `be
 
 ### Default parameters
 
-Out of the box this this extension has the following default parameters:
+Out of the box this extension has the following default parameters:
 
 | parameter                                        | value                 |
 |--------------------------------------------------|-----------------------|
@@ -58,7 +58,7 @@ You can overwrite any of these parameters in the `behat.yml` file as needed.
 
 ### Optional parameters
 
-To prevent having use OAuth to retrieve an access token for each API call you can also specify an optional `access_token` in the parameters:
+To avoid having to use OAuth to retrieve an access token for each API call you can also specify an optional `access_token` in the parameters:
 
     default:
         extensions:
@@ -141,7 +141,7 @@ In some cases you might want to override the base url for a specific suite. Belo
         extensions:
             Kielabokkie\BehatJsonApi: ~
 
-You also need to add the folling to the constructor of your `FeatureContext.php` class.
+You also need to add the following to the constructor of your `FeatureContext.php` class.
 
 ```php
 <?php
