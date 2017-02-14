@@ -12,13 +12,7 @@ The JSON API Behat Extension provides step definitions for common testing scenar
 
 Recommended installation is by running the composer require command. This will install the latest stable version of this extension.
 
-    composer require kielabokkie/jsonapi-behat-extension:1.0.*@beta --dev
-
-Or alternatively you can manually add the package to your `composer.json` file.
-
-    "require-dev": {
-        "kielabokkie/jsonapi-behat-extension": "1.0.*@beta"
-    },
+    composer require kielabokkie/jsonapi-behat-extension --dev
 
 ## Configuration
 
