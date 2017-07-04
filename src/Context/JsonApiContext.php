@@ -10,7 +10,7 @@ use PHPUnit_Framework_Assert as PHPUnit;
 /**
  * Defines application features from the specific context.
  */
-class JsonApiContext implements SnippetAcceptingContext
+class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 {
     /**
      * @var \Buzz\Browser
