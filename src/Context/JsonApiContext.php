@@ -825,7 +825,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
     /**
      * Checks the response exists and returns it.
      *
-     * @return  Guzzle\Http\Message\Response
+     * @return  \Buzz\Message\Response
      */
     protected function getResponse()
     {
