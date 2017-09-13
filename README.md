@@ -62,23 +62,16 @@ To avoid having to use OAuth to retrieve an access token for each API call you c
 
 ## Usage
 
-To use the step definitions provided by this extension you need to modify your `FeatureContext.php` file to extend the `JsonApiContext` instead of the standard `BehatContext` and call the `parent::construct()` method in the constructor.
+To use the step definitions provided by this extension just load the context class in your suites:
 
-
-```php
-<?php
-
-use Kielabokkie\BehatJsonApi\Context\JsonApiContext;
-
-/**
-  * Defines application features from the specific context.
-  */
-class FeatureContext extends JsonApiContext
-{
-}
+```yaml
+default:
+  suites:
+    default:
+      contexts:
+        - Kielabokkie\BehatJsonApi\Context\JsonApiContext
 ```
-
-When you've made the changes above to your FeatureContext class you get access to the following step definitions:
+You will then have access to the following step definitions:
 
     @Given I use the access token
     @Given I use access token :token
@@ -125,38 +118,12 @@ In some cases you might want to override the base url for a specific suite. Belo
                 paths:
                     - %paths.base%/tests/Behat/features/api
                 contexts:
-                    - FeatureContext: ~
+                    - Kielabokkie\BehatJsonApi\Context\JsonApiContext: ~
             hooks:
                 paths:
                     - %paths.base%/tests/Behat/features/hooks
                 contexts:
-                    - FeatureContext:
+                    - Kielabokkie\BehatJsonApi\Context\JsonApiContext:
                         - http://hooks.yourapp.dev
         extensions:
             Kielabokkie\BehatJsonApi: ~
-
-You also need to add the following to the constructor of your `FeatureContext.php` class.
-
-```php
-<?php
-
-use Kielabokkie\BehatJsonApi\Context\JsonApiContext;
-
-/**
- * Defines application features from the specific context.
- */
-class FeatureContext extends JsonApiContext
-{
-    /**
-     * Initialize the context
-     */
-    public function __construct($baseUrl = null)
-    {
-        parent::__construct();
-
-        if (is_null($baseUrl) === false) {
-            $this->baseUrl = rtrim($baseUrl, '/');
-        }
-    }
-}
-```

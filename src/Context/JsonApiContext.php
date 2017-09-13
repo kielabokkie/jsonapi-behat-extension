@@ -10,7 +10,7 @@ use PHPUnit_Framework_Assert as PHPUnit;
 /**
  * Defines application features from the specific context.
  */
-class JsonApiContext implements SnippetAcceptingContext
+class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 {
     /**
      * @var \Buzz\Browser
@@ -825,7 +825,7 @@ class JsonApiContext implements SnippetAcceptingContext
     /**
      * Checks the response exists and returns it.
      *
-     * @return  Guzzle\Http\Message\Response
+     * @return  \Buzz\Message\Response
      */
     protected function getResponse()
     {

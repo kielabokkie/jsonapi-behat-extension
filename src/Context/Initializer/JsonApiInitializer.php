@@ -2,6 +2,7 @@
 
 use Behat\Behat\Context\Initializer\ContextInitializer;
 use Behat\Behat\Context\Context;
+use Kielabokkie\BehatJsonApi\Context\JsonApiAwareInterface;
 
 class JsonApiInitializer implements ContextInitializer
 {
@@ -34,7 +35,9 @@ class JsonApiInitializer implements ContextInitializer
      */
     public function initializeContext(Context $context)
     {
-        $context->setBaseUrl($this->baseUrl);
-        $context->setParameters($this->parameters);
+        if ($context instanceof JsonApiAwareInterface) {
+            $context->setBaseUrl($this->baseUrl);
+            $context->setParameters($this->parameters);
+        }
     }
 }
