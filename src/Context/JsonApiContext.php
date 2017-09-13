@@ -5,7 +5,7 @@ use Behat\Gherkin\Node\PyStringNode;
 use Buzz\Browser;
 use Buzz\Message\Request;
 use Exception;
-use PHPUnit_Framework_Assert as PHPUnit;
+use PHPUnit\Framework\Assert as PHPUnit;
 
 /**
  * Defines application features from the specific context.
@@ -187,7 +187,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
         $this->sendOauthRequest($payload);
     }
-    
+
     /**
      * @Given I oauth using the client credentials grant with :id and :secret and scope :scope
      *
@@ -699,7 +699,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
         return $payload;
     }
-    
+
     /**
      * Build a payload for the client credentials grant with the given variables
      *
@@ -890,7 +890,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
             return $array;
         }
 
-        foreach(explode('.', $key) as $segment) {
+        foreach (explode('.', $key) as $segment) {
             if (is_object($array) === true) {
                 if (isset($array->{$segment}) === false) {
                     return;
