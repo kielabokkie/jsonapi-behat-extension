@@ -4,9 +4,10 @@
 [![Packagist Version](https://img.shields.io/packagist/v/kielabokkie/jsonapi-behat-extension.svg?style=flat-square)](https://packagist.org/packages/kielabokkie/jsonapi-behat-extension)
 [![Codacy Badge](https://img.shields.io/codacy/05bb81bdf72e4dfb8b78e76410ff7605.svg?style=flat-square)](https://www.codacy.com/app/kielabokkie/jsonapi-behat-extension)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
-[![Gitter](https://img.shields.io/badge/gitter-join%20chat-2DCD76.svg?style=flat-square)](https://gitter.im/kielabokkie/jsonapi-behat-extension)
 
 The JSON API Behat Extension provides step definitions for common testing scenarios specific to JSON APIs. It comes with easy ways to handle authentication through OAuth.
+
+Starting from version 2.1 this extension also has built-in support for Laravel 5.5. This means that all requests go through Laravel's request system, eliminating the use of a webserver when running your tests. Check the [Laravel setup](#laravel-setup) section for instructions on how to set this up.
 
 ## Installation
 
@@ -127,3 +128,15 @@ In some cases you might want to override the base url for a specific suite. Belo
                         - http://hooks.yourapp.dev
         extensions:
             Kielabokkie\BehatJsonApi: ~
+
+## Laravel Setup
+
+To use the Laravel specific context all you have to do is change the context class to `JsonApiLaravelContext`:
+
+```yaml
+default:
+  suites:
+    default:
+      contexts:
+        - Kielabokkie\BehatJsonApi\Context\JsonApiLaravelContext
+```
