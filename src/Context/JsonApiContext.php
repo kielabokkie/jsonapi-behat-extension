@@ -1,4 +1,6 @@
-<?php namespace Kielabokkie\BehatJsonApi\Context;
+<?php
+
+namespace Kielabokkie\BehatJsonApi\Context;
 
 use Behat\Behat\Context\SnippetAcceptingContext;
 use Buzz\Browser;
