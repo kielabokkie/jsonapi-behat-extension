@@ -1,6 +1,7 @@
-<?php namespace Kielabokkie\BehatJsonApi\Context;
+<?php
 
-use Behat\Behat\Context\SnippetAcceptingContext;
+namespace Kielabokkie\BehatJsonApi\Context;
+
 use Behat\Gherkin\Node\PyStringNode;
 use Buzz\Browser;
 use Buzz\Message\Request;
@@ -63,19 +64,6 @@ trait JsonApiContextTrait
     protected $headers = array();
 
     /**
-     * Initialize the context
-     */
-    public function __construct()
-    {
-        // Start with the default set of headers
-        $this->resetHeaders();
-
-        if (is_null($this->client) === true) {
-            $this->client = new Browser();
-        }
-    }
-
-    /**
      * Set the base url (specified in behat.yml)
      *
      * @param string $baseUrl [description]
@@ -94,6 +82,37 @@ trait JsonApiContextTrait
     public function setParameters(array $parameters)
     {
         $this->parameters = $parameters;
+    }
+
+    /**
+     * @When /^I request "(GET|PUT|PATCH|POST|DELETE) ([^"]*)"$/
+     *
+     * Call an API endpoint
+     * -
+     * Example:
+     * When I request "GET /v1/movies"
+     */
+    public function iRequest(string $method, string $resource)
+    {
+        $url = $resource;
+
+        // If there is no authorization header we assume the access token should be passed as a GET parameter
+        if ($this->hasHeader('Authorization') === false && is_null($this->accessToken) === false) {
+            $url = sprintf('%s?access_token=%s', $url, $this->accessToken);
+        }
+
+        switch ($method) {
+            case 'PUT':
+            case 'POST':
+            case 'PATCH':
+                $this->response = $this->executeRequest($url, $method, $this->headers, $this->requestPayload);
+                break;
+            default:
+                $this->response = $this->executeRequest($url, $method, $this->headers);
+        }
+
+        // Reset so we have the default set of headers again
+        $this->resetHeaders();
     }
 
     /**
@@ -251,41 +270,6 @@ trait JsonApiContextTrait
     }
 
     /**
-     * @When /^I request "(GET|PUT|PATCH|POST|DELETE) ([^"]*)"$/
-     *
-     * Call an API endpoint
-     * -
-     * Example:
-     * When I request "GET /v1/movies"
-     */
-    public function iRequest($httpMethod, $resource)
-    {
-        $method = strtolower($httpMethod);
-
-        $url = sprintf('%s%s', $this->baseUrl, $resource);
-
-        // If there is no authorization header we assume the access token should be passed as a GET parameter
-        if ($this->hasHeader('Authorization') === false && is_null($this->accessToken) === false) {
-            $url = sprintf('%s?access_token=%s', $url, $this->accessToken);
-        }
-
-        switch ($httpMethod) {
-            case 'PUT':
-            case 'POST':
-            case 'PATCH':
-                $this->response = $this->client
-                     ->$method($url, $this->headers, $this->requestPayload);
-                break;
-            default:
-                $this->response = $this->client
-                     ->$method($url, $this->headers);
-        }
-
-        // Reset so we have the default set of headers again
-        $this->resetHeaders();
-    }
-
-    /**
      * @Then I get a :statuscode response
      *
      * Check the status code of a response
@@ -297,7 +281,8 @@ trait JsonApiContextTrait
     {
         $response = $this->getResponse();
 
-        $contentType = $response->getHeader('Content-Type');
+        $contentType = $this->getContentType($response);
+        // $contentType = $response->getHeader('Content-Type');
         $bodyOutput = $response->getContent();
 
         if ($contentType !== 'application/json') {
@@ -438,7 +423,7 @@ trait JsonApiContextTrait
         $actualValue = $this->arrayGet($payload, $property);
 
         PHPUnit::assertEquals(
-            count(array_keys((array)$actualValue)),
+            count(array_keys((array) $actualValue)),
             $count,
             sprintf('Asserting the [%s] array contains [%s] items', $property, $count)
         );
@@ -591,56 +576,6 @@ trait JsonApiContextTrait
     }
 
     /**
-     * @Then /^echo last request$/
-     *
-     * Echos the last request for debugging purposes
-     * -
-     * Example:
-     * And echo last request
-     */
-    public function echoLastRequest()
-    {
-        $request = $this->client->getLastRequest();
-
-        echo sprintf("%s %s%s HTTP/%s\n", $request->getMethod(), $request->getHost(), $request->getResource(), $request->getProtocolVersion());
-
-        $headerString = '';
-        foreach ($request->getHeaders() as $header) {
-            $headerString = sprintf("%s%s\n", $headerString, $header);
-        }
-
-        echo rtrim($headerString, "\n");
-
-        if (empty($request->getContent()) === false) {
-            echo sprintf("\nContent: %s", $request->getContent());
-        }
-    }
-
-    /**
-     * @Then /^echo last response$/
-     *
-     * Echos the last response for debugging purposes
-     * -
-     * Example:
-     * And echo last response
-     */
-    public function echoLastResponse()
-    {
-        $response = $this->client->getLastResponse();
-
-        $headerString = '';
-        foreach ($response->getHeaders() as $header) {
-            $headerString = sprintf("%s%s\n", $headerString, $header);
-        }
-
-        echo rtrim($headerString, "\n");
-
-        if (empty($response->getContent()) === false) {
-            echo sprintf("\nContent: %s", $response->getContent());
-        }
-    }
-
-    /**
      * Create a payload for the password grant
      *
      * @param  string $username
@@ -656,8 +591,8 @@ trait JsonApiContextTrait
 
         $payload = [
             "grant_type" => 'password',
-            "username"   => $username,
-            "password"   => $password,
+            "username" => $username,
+            "password" => $password,
         ];
 
         // Add scope to payload if it is set
@@ -687,8 +622,8 @@ trait JsonApiContextTrait
         }
 
         $payload = [
-            "grant_type"    => 'client_credentials',
-            "client_id"     => $this->parameters['oauth']['client_id'],
+            "grant_type" => 'client_credentials',
+            "client_id" => $this->parameters['oauth']['client_id'],
             "client_secret" => $this->parameters['oauth']['client_secret'],
         ];
 
@@ -710,8 +645,8 @@ trait JsonApiContextTrait
     public function buildClientCredentialsGrantPayload($id, $secret, $scope = null)
     {
         $payload = [
-            "grant_type"    => 'client_credentials',
-            "client_id"     => $id,
+            "grant_type" => 'client_credentials',
+            "client_id" => $id,
             "client_secret" => $secret,
         ];
 
@@ -730,9 +665,10 @@ trait JsonApiContextTrait
      */
     protected function sendOauthRequest(array $payload)
     {
-        $url = sprintf('%s%s', $this->baseUrl, $this->parameters['oauth']['uri']);
+        $url = $this->parameters['oauth']['uri'];
 
-        $response = $this->client->post($url, $this->headers, json_encode($payload));
+        $response = $this->executeRequest($url, 'POST', $this->headers, $payload);
+
         $responseContent = json_decode($response->getContent());
 
         // Throw an exception if the statuscode is not 200

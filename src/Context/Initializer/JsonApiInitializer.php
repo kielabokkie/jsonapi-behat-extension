@@ -1,4 +1,6 @@
-<?php namespace Kielabokkie\BehatJsonApi\Context\Initializer;
+<?php
+
+namespace Kielabokkie\BehatJsonApi\Context\Initializer;
 
 use Behat\Behat\Context\Initializer\ContextInitializer;
 use Behat\Behat\Context\Context;
