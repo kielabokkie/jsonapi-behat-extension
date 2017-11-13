@@ -669,6 +669,8 @@ trait JsonApiContextTrait
 
         $response = $this->executeRequest($url, 'POST', $this->headers, $payload);
 
+        $this->response = $response;
+
         $responseContent = json_decode($response->getContent());
 
         // Throw an exception if the statuscode is not 200

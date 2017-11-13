@@ -51,7 +51,20 @@ class JsonApiLaravelContext extends TestCase implements SnippetAcceptingContext,
      */
     public function echoLastRequest()
     {
-        echo 'Echoing the last request is not supported by this context.';
+        $request = request();
+
+        echo sprintf("%s %s %s\n", $request->method(), $request->path(), $request->server('SERVER_PROTOCOL'));
+
+        $headerString = "\n";
+        foreach ($request->headers as $key => $header) {
+            $headerString .= sprintf("%s: %s\n", $key, implode(' ', $header));
+        }
+
+        echo rtrim($headerString, "\n");
+
+        if (empty($request->getContent()) === false) {
+            echo sprintf("\nContent: %s", $request->getContent());
+        }
     }
 
     /**
@@ -64,7 +77,18 @@ class JsonApiLaravelContext extends TestCase implements SnippetAcceptingContext,
      */
     public function echoLastResponse()
     {
-        echo 'Echoing the last response is not supported by this context.';
+        $response = $this->response;
+
+        $headerString = '';
+        foreach ($response->headers as $key => $header) {
+            $headerString .= sprintf("%s: %s\n", $key, implode(' ', $header));
+        }
+
+        echo rtrim($headerString, "\n");
+
+        if (empty($response->getContent()) === false) {
+            echo sprintf("\nContent: %s", $response->getContent());
+        }
     }
 
     /**

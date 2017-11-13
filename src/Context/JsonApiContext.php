@@ -61,7 +61,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface, 
 
         echo sprintf("%s %s%s HTTP/%s\n", $request->getMethod(), $request->getHost(), $request->getResource(), $request->getProtocolVersion());
 
-        $headerString = '';
+        $headerString = "\n";
         foreach ($request->getHeaders() as $header) {
             $headerString = sprintf("%s%s\n", $headerString, $header);
         }
@@ -83,7 +83,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface, 
      */
     public function echoLastResponse()
     {
-        $response = $this->client->getLastResponse();
+        $response = $this->response;
 
         $headerString = '';
         foreach ($response->getHeaders() as $header) {
