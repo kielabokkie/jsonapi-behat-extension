@@ -3,8 +3,6 @@
 namespace Kielabokkie\BehatJsonApi\Context;
 
 use Behat\Behat\Context\SnippetAcceptingContext;
-use Behat\Behat\Hook\Scope\AfterScenarioScope;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
 use Kielabokkie\BehatJsonApi\Context\JsonApiAwareInterface;
@@ -35,7 +33,7 @@ class JsonApiLaravelContext extends TestCase implements SnippetAcceptingContext,
      *
      * @BeforeScenario
      */
-    public function before(BeforeScenarioScope $scope)
+    public function before()
     {
         DB::beginTransaction();
 
@@ -49,7 +47,7 @@ class JsonApiLaravelContext extends TestCase implements SnippetAcceptingContext,
      *
      * @AfterScenario
      */
-    public function after(AfterScenarioScope $scope)
+    public function after()
     {
         DB::rollBack();
     }
