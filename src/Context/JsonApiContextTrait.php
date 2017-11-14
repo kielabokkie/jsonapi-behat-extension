@@ -215,9 +215,9 @@ trait JsonApiContextTrait
      * Example:
      * Given I oauth using the client credentials grant with "oauth_id" and "oauth_secret" and scope "view edit"
      */
-    public function iOauthUsingTheClientCredentialsGrantWithAllDetails($id, $secret, $scope)
+    public function iOauthUsingTheClientCredentialsGrantWithAllDetails($clientId, $clientSecret, $scope)
     {
-        $payload = $this->buildClientCredentialsGrantPayload($id, $secret, $scope);
+        $payload = $this->buildClientCredentialsGrantPayload($clientId, $clientSecret, $scope);
 
         $this->sendOauthRequest($payload);
     }
@@ -230,9 +230,9 @@ trait JsonApiContextTrait
      * Example:
      * Given I oauth using the client credentials grant with "oauth_id" and "oauth_secret"
      */
-    public function iOauthUsingTheClientCredentialsGrantWithAllDetailsExceptScope($id, $secret)
+    public function iOauthUsingTheClientCredentialsGrantWithAllDetailsExceptScope($clientId, $clientSecret)
     {
-        $payload = $this->buildClientCredentialsGrantPayload($id, $secret);
+        $payload = $this->buildClientCredentialsGrantPayload($clientId, $clientSecret);
 
         $this->sendOauthRequest($payload);
     }
@@ -642,12 +642,12 @@ trait JsonApiContextTrait
      *
      * @return array
      */
-    public function buildClientCredentialsGrantPayload($id, $secret, $scope = null)
+    public function buildClientCredentialsGrantPayload($clientId, $clientSecret, $scope = null)
     {
         $payload = [
             "grant_type" => 'client_credentials',
-            "client_id" => $id,
-            "client_secret" => $secret,
+            "client_id" => $clientId,
+            "client_secret" => $clientSecret,
         ];
 
         // Add scope to payload if it is set
