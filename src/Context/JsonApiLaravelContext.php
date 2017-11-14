@@ -3,6 +3,10 @@
 namespace Kielabokkie\BehatJsonApi\Context;
 
 use Behat\Behat\Context\SnippetAcceptingContext;
+use Behat\Behat\Hook\Scope\AfterScenarioScope;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\DB;
 use Kielabokkie\BehatJsonApi\Context\JsonApiAwareInterface;
 use Kielabokkie\BehatJsonApi\Context\JsonApiContextInterface;
 use Kielabokkie\BehatJsonApi\Context\JsonApiContextTrait;
@@ -23,7 +27,31 @@ class JsonApiLaravelContext extends TestCase implements SnippetAcceptingContext,
         // Start with the default set of headers
         $this->resetHeaders();
 
-        parent::setUp();
+        self::setUp();
+    }
+
+    /**
+     * Get a fresh database with seeded data and begin transaction
+     *
+     * @BeforeScenario
+     */
+    public function before(BeforeScenarioScope $scope)
+    {
+        DB::beginTransaction();
+
+        $this->artisan('migrate:refresh', ['--seed' => true]);
+
+        $this->app[Kernel::class]->setArtisan(null);
+    }
+
+    /**
+     * Rollback all database changes to return to its initial state
+     *
+     * @AfterScenario
+     */
+    public function after(AfterScenarioScope $scope)
+    {
+        DB::rollBack();
     }
 
     /**
