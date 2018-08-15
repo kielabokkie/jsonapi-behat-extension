@@ -12,7 +12,7 @@ services:
   jsonapi.context.initializer:
     class: "%jsonapi.context.initializer.class%"
     arguments:
-      - %jsonapi.base_url%
-      - %jsonapi.parameters%
+      - "%jsonapi.base_url%"
+      - "%jsonapi.parameters%"
     tags:
       -  { name: context.initializer }
