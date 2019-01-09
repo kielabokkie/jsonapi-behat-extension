@@ -13,7 +13,7 @@
     "require": {
         "php": ">=5.4",
         "behat/behat": "~3.0",
-        "kriswallsmith/buzz": "~0.14",
+        "kriswallsmith/buzz": "0.15.2",
         "phpunit/phpunit": ">=5.7"
     },
     "autoload": {
