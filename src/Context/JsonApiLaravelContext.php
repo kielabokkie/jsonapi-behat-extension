@@ -3,15 +3,17 @@
 namespace Kielabokkie\BehatJsonApi\Context;
 
 use Behat\Behat\Context\SnippetAcceptingContext;
-use Buzz\Browser;
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\DB;
 use Kielabokkie\BehatJsonApi\Context\JsonApiAwareInterface;
 use Kielabokkie\BehatJsonApi\Context\JsonApiContextInterface;
 use Kielabokkie\BehatJsonApi\Context\JsonApiContextTrait;
+use Tests\TestCase;
 
 /**
  * Defines application features from the specific context.
  */
-class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface, JsonApiContextInterface
+class JsonApiLaravelContext extends TestCase implements SnippetAcceptingContext, JsonApiAwareInterface, JsonApiContextInterface
 {
     use JsonApiContextTrait;
 
@@ -23,9 +25,31 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface, 
         // Start with the default set of headers
         $this->resetHeaders();
 
-        if (is_null($this->client) === true) {
-            $this->client = new Browser();
-        }
+        self::setUp();
+    }
+
+    /**
+     * Get a fresh database with seeded data and begin transaction
+     *
+     * @BeforeScenario
+     */
+    public function before()
+    {
+        DB::beginTransaction();
+
+        $this->artisan('migrate:refresh', ['--seed' => true]);
+
+        $this->app[Kernel::class]->setArtisan(null);
+    }
+
+    /**
+     * Rollback all database changes to return to its initial state
+     *
+     * @AfterScenario
+     */
+    public function after()
+    {
+        DB::rollBack();
     }
 
     /**
@@ -38,14 +62,10 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface, 
      */
     public function executeRequest(string $url, string $method, array $headers = [], array $payload = [])
     {
-        $url = sprintf('%s%s', $this->baseUrl, $url);
-        $method = strtolower($method);
-
         return $this
-            ->client
-            ->$method($url, $headers, json_encode($payload));
+            ->withHeaders($headers)
+            ->json($method, $url, $payload);
     }
-
 
     /**
      * @Then /^echo last request$/
@@ -57,13 +77,13 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface, 
      */
     public function echoLastRequest()
     {
-        $request = $this->client->getLastRequest();
+        $request = request();
 
-        echo sprintf("%s %s%s HTTP/%s\n", $request->getMethod(), $request->getHost(), $request->getResource(), $request->getProtocolVersion());
+        echo sprintf("%s %s %s\n", $request->method(), $request->path(), $request->server('SERVER_PROTOCOL'));
 
         $headerString = "\n";
-        foreach ($request->getHeaders() as $header) {
-            $headerString = sprintf("%s%s\n", $headerString, $header);
+        foreach ($request->headers as $key => $header) {
+            $headerString .= sprintf("%s: %s\n", $key, implode(' ', $header));
         }
 
         echo rtrim($headerString, "\n");
@@ -86,8 +106,8 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface, 
         $response = $this->response;
 
         $headerString = '';
-        foreach ($response->getHeaders() as $header) {
-            $headerString = sprintf("%s%s\n", $headerString, $header);
+        foreach ($response->headers as $key => $header) {
+            $headerString .= sprintf("%s: %s\n", $key, implode(' ', $header));
         }
 
         echo rtrim($headerString, "\n");
@@ -100,11 +120,11 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface, 
     /**
      * Get the content type of a given request
      *
-     * @param Buzz\Message\Response $response
+     * @param Illuminate\Foundation\Testing\TestResponse $response
      */
     public function getContentType($response)
     {
-        return $response->getHeader('Content-Type');
+        return $response->baseResponse->headers->get('Content-Type');
     }
 
 }

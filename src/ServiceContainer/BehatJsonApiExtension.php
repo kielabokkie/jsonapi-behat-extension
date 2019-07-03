@@ -1,4 +1,6 @@
-<?php namespace Kielabokkie\BehatJsonApi\ServiceContainer;
+<?php
+
+namespace Kielabokkie\BehatJsonApi\ServiceContainer;
 
 use Behat\Behat\Context\ServiceContainer\ContextExtension;
 use Behat\Testwork\EventDispatcher\ServiceContainer\EventDispatcherExtension;
