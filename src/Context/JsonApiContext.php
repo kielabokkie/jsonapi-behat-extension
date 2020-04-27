@@ -474,12 +474,18 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
     public function thePropertyIsAnInteger($property)
     {
         $payload = $this->getScopePayload();
-
-        PHPUnit::assertInternalType(
-            'int',
-            $this->arrayGet($payload, $property),
-            sprintf("Asserting the [%s] property in current scope [%s] is an integer", $property, $this->scope)
+        $actual = $this->arrayGet($payload, $property);
+        $message = sprintf(
+            "Asserting the [%s] property in current scope [%s] is an integer",
+            $property,
+            $this->scope
         );
+
+        if (method_exists(PHPUnit::class, 'assertInternalType')) {
+            PHPUnit::assertInternalType('int', $actual, $message);
+        } else {
+            PHPUnit::assertIsInt($actual, $message);
+        }
     }
 
     /**
@@ -515,12 +521,14 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
     public function thePropertyIsAString($property)
     {
         $payload = $this->getScopePayload();
+        $actual = $this->arrayGet($payload, $property);
+        $message = sprintf("Asserting the [%s] property in current scope [%s] is a string", $property, $this->scope);
 
-        PHPUnit::assertInternalType(
-            'string',
-            $this->arrayGet($payload, $property),
-            sprintf("Asserting the [%s] property in current scope [%s] is a string", $property, $this->scope)
-        );
+        if (method_exists(PHPUnit::class, 'assertInternalType')) {
+            PHPUnit::assertInternalType('string', $actual, $message);
+        } else {
+            PHPUnit::assertIsString($actual, $message);
+        }
     }
 
     /**
@@ -557,11 +565,15 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
     {
         $payload = $this->getScopePayload();
 
-        PHPUnit::assertInternalType(
-            'boolean',
-            $this->arrayGet($payload, $property),
-            sprintf("Asserting the [%s] property in current scope [%s] is a boolean", $property, $this->scope)
-        );
+        $actual = $this->arrayGet($payload, $property);
+        $message = sprintf("Asserting the [%s] property in current scope [%s] is a boolean", $property, $this->scope);
+
+        if (method_exists(PHPUnit::class, 'assertInternalType')) {
+            PHPUnit::assertInternalType('boolean', $this->arrayGet($payload, $property), $message);
+        } else {
+            PHPUnit::assertIsBool($actual, $message);
+        }
+
     }
 
     /**
