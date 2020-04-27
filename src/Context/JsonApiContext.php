@@ -564,7 +564,6 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
     public function thePropertyIsABoolean($property)
     {
         $payload = $this->getScopePayload();
-
         $actual = $this->arrayGet($payload, $property);
         $message = sprintf("Asserting the [%s] property in current scope [%s] is a boolean", $property, $this->scope);
 
@@ -573,7 +572,6 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
         } else {
             PHPUnit::assertIsBool($actual, $message);
         }
-
     }
 
     /**
