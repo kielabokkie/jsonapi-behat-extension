@@ -742,7 +742,8 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
     {
         $url = sprintf('%s%s', $this->baseUrl, $this->parameters['oauth']['uri']);
 
-        $response = $this->client->post($url, $this->headers, json_encode($payload));
+        $this->headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        $response = $this->client->post($url, $this->headers, http_build_query($payload));
         $responseContent = json_decode($response->getContent());
 
         // Throw an exception if the statuscode is not 200
