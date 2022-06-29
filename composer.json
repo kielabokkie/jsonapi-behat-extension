@@ -11,10 +11,11 @@
         }
     ],
     "require": {
-        "php": ">=5.4",
+        "php": "^8.0",
         "behat/behat": "~3.0",
-        "kriswallsmith/buzz": "0.15.2",
-        "phpunit/phpunit": ">=5.7"
+        "kriswallsmith/buzz": "~1.0",
+        "phpunit/phpunit": ">=5.7",
+        "nyholm/psr7": "^1.5"
     },
     "autoload": {
         "psr-4": {
