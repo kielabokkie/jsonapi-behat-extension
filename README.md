@@ -109,6 +109,7 @@ You will then have access to the following step definitions:
     @Then /^echo last request$/
     @Then /^echo last response$
 
+Note: The last two definitions are for debugging purposes and only show output when you use the `pretty` formatting option of Behat, i.e. `./vendor/bin/behat -f pretty`.
 
 To get a list of all available step definitions including examples you can run the following command:
 
