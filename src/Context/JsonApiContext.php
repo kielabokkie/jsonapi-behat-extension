@@ -1,66 +1,48 @@
 <?php namespace Kielabokkie\BehatJsonApi\Context;
 
-use Behat\Behat\Context\SnippetAcceptingContext;
+use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use Buzz\Browser;
-use Buzz\Message\Request;
+use Buzz\Client\FileGetContents;
 use Exception;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Assert as PHPUnit;
 
 /**
  * Defines application features from the specific context.
  */
-class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
+class JsonApiContext implements Context, JsonApiAwareInterface
 {
-    /**
-     * @var \Buzz\Browser
-     */
-    protected $client;
+    protected ?Browser $browser = null;
 
-    /**
-     * @var string
-     */
-    protected $baseUrl;
+    protected ?string $baseUrl = null;
 
-    /**
-     * @var string
-     */
-    private $accessToken;
+    private ?string $accessToken = null;
 
-    /**
-     * @var \Behat\Gherkin\Node\PyStringNode
-     */
-    protected $requestPayload;
+    protected string $requestPayload;
 
-    /**
-     * @var array
-     */
-    protected $responsePayload;
+    protected object $responsePayload;
 
-    /**
-     * @var \Buzz\Message\Response
-     */
-    protected $response;
+    protected ?Response $response = null;
+
+    protected string $responseBody;
 
     /**
      * The current scope within the response payload
      * which conditions are asserted against.
      */
-    protected $scope;
+    protected ?string $scope = null;
 
     /**
      * Context parameters (which are set in behat.yml)
-     *
-     *  @var array
      */
-    protected $parameters = array();
+    protected array $parameters = [];
 
     /**
      * Request headers
-     *
-     * @var array
      */
-    protected $headers = array();
+    protected array $headers = [];
 
     /**
      * Initialize the context
@@ -70,20 +52,21 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
         // Start with the default set of headers
         $this->resetHeaders();
 
-        if (is_null($this->client) === true) {
-            $this->client = new Browser();
+        if ($this->browser === null) {
+            $client = new FileGetContents(new Psr17Factory());
+            $this->browser = new Browser($client, new Psr17Factory());
         }
     }
 
     /**
      * Set the base url (specified in behat.yml)
      *
-     * @param string $baseUrl [description]
+     * @param string $baseUrl
      */
-    public function setBaseUrl($baseUrl)
+    public function setBaseUrl($baseUrl): void
     {
         // Only set the baseUrl if it's not already set
-        if (is_null($this->baseUrl) === true) {
+        if ($this->baseUrl === null) {
             $this->baseUrl = rtrim($baseUrl, '/');
         }
     }
@@ -91,7 +74,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
     /**
      * Set extension specific parameters (specified in behat.yml)
      */
-    public function setParameters(array $parameters)
+    public function setParameters(array $parameters): void
     {
         $this->parameters = $parameters;
     }
@@ -104,7 +87,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * Given I use the access token
      */
-    public function iUseTheAccessToken()
+    public function iUseTheAccessToken(): void
     {
         if (isset($this->parameters['access_token']) === false) {
             throw new Exception('The access token is not found in the behat.yml file.');
@@ -122,7 +105,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * Given I use access token "90dabed99acef998fd3e35280f2a0a3c30c00c8d"
      */
-    public function iUseAccessToken($accessToken)
+    public function iUseAccessToken($accessToken): void
     {
         // Set the authentication token
         $this->setAuthentication($accessToken);
@@ -136,7 +119,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * Given I oauth with "email@yourdomain.com" and "p4ssw0rd"
      */
-    public function iOauthWithUsernameAndPassword($username, $password)
+    public function iOauthWithUsernameAndPassword($username, $password): void
     {
         $payload = $this->createPasswordGrantPayload($username, $password);
 
@@ -151,7 +134,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * Given I oauth with "email@yourdomain.com" and "p4ssw0rd" and scope "view edit"
      */
-    public function iOauthWithUsernameAndPasswordAndScope($username, $password, $scope)
+    public function iOauthWithUsernameAndPasswordAndScope($username, $password, $scope): void
     {
         $payload = $this->createPasswordGrantPayload($username, $password, $scope);
 
@@ -166,7 +149,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * Given I oauth using the client credentials grant
      */
-    public function iOauthUsingTheClientCredentialsGrant()
+    public function iOauthUsingTheClientCredentialsGrant(): void
     {
         $payload = $this->createClientCredentialsGrantPayload();
 
@@ -181,7 +164,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * Given I oauth using the client credentials grant with scope "view edit"
      */
-    public function iOauthUsingTheClientCredentialsGrantWithScope($scope)
+    public function iOauthUsingTheClientCredentialsGrantWithScope($scope): void
     {
         $payload = $this->createClientCredentialsGrantPayload($scope);
 
@@ -196,7 +179,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * Given I oauth using the client credentials grant with "oauth_id" and "oauth_secret" and scope "view edit"
      */
-    public function iOauthUsingTheClientCredentialsGrantWithAllDetails($id, $secret, $scope)
+    public function iOauthUsingTheClientCredentialsGrantWithAllDetails($id, $secret, $scope): void
     {
         $payload = $this->buildClientCredentialsGrantPayload($id, $secret, $scope);
 
@@ -211,7 +194,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * Given I oauth using the client credentials grant with "oauth_id" and "oauth_secret"
      */
-    public function iOauthUsingTheClientCredentialsGrantWithAllDetailsExceptScope($id, $secret)
+    public function iOauthUsingTheClientCredentialsGrantWithAllDetailsExceptScope($id, $secret): void
     {
         $payload = $this->buildClientCredentialsGrantPayload($id, $secret);
 
@@ -226,7 +209,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * Given I add a "X-My-Header" header with the value "bacon"
      */
-    public function iAddAHeaderWithTheValue($header, $value)
+    public function iAddAHeaderWithTheValue($header, $value): void
     {
         $this->addHeader($header, $value);
     }
@@ -245,7 +228,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      *   }
      *   """
      */
-    public function iHaveThePayload(PyStringNode $requestPayload)
+    public function iHaveThePayload(PyStringNode $requestPayload): void
     {
         $this->requestPayload = $requestPayload->getRaw();
     }
@@ -258,28 +241,23 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * When I request "GET /v1/movies"
      */
-    public function iRequest($httpMethod, $resource)
+    public function iRequest($httpMethod, $resource): void
     {
         $method = strtolower($httpMethod);
 
         $url = sprintf('%s%s', $this->baseUrl, $resource);
 
         // If there is no authorization header we assume the access token should be passed as a GET parameter
-        if ($this->hasHeader('Authorization') === false && is_null($this->accessToken) === false) {
+        if ($this->hasHeader('Authorization') === false && $this->accessToken !== null) {
             $url = sprintf('%s?access_token=%s', $url, $this->accessToken);
         }
 
-        switch ($httpMethod) {
-            case 'PUT':
-            case 'POST':
-            case 'PATCH':
-                $this->response = $this->client
-                     ->$method($url, $this->headers, $this->requestPayload);
-                break;
-            default:
-                $this->response = $this->client
-                     ->$method($url, $this->headers);
-        }
+        $this->response = match ($httpMethod) {
+            'PUT', 'POST', 'PATCH' => $this->browser->$method($url, $this->headers, $this->requestPayload),
+            default => $this->browser->$method($url, $this->headers),
+        };
+
+        $this->responseBody = $this->response->getBody()->getContents();
 
         // Reset so we have the default set of headers again
         $this->resetHeaders();
@@ -293,18 +271,18 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * Then I get a 200 response
      */
-    public function iGetAResponse($statusCode)
+    public function iGetAResponse($statusCode): void
     {
         $response = $this->getResponse();
 
-        $contentType = $response->getHeader('Content-Type');
-        $bodyOutput = $response->getContent();
+        $contentType = $response->getHeader('Content-Type')[0];
+        $bodyOutput = $this->responseBody;
 
         if ($contentType !== 'application/json') {
             $bodyOutput = sprintf("Expected 'application/json' content type but got '%s' instead.", $contentType);
         }
 
-        PHPUnit::assertSame(intval($statusCode), $this->getResponse()->getStatusCode(), $bodyOutput);
+        PHPUnit::assertSame(intval($statusCode), $response->getStatusCode(), $bodyOutput);
     }
 
     /**
@@ -315,7 +293,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * Then scope into the "data" property
      */
-    public function scopeIntoTheProperty($scope)
+    public function scopeIntoTheProperty($scope): void
     {
         $this->scope = $scope;
     }
@@ -328,10 +306,10 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * Then scope into the first "actors" element
      */
-    public function scopeIntoTheFirstElement($scope)
+    public function scopeIntoTheFirstElement($scope): void
     {
         // Check if there is a current scope
-        if (is_null($this->scope) === true) {
+        if ($this->scope === null) {
             $this->scope = sprintf('%s.0', $scope);
         } else {
             $this->scope = sprintf('%s.%s.0', $this->scope, $scope);
@@ -351,7 +329,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      *   genres
      *   """
      */
-    public function theStructureMatches(PyStringNode $propertiesString)
+    public function theStructureMatches(PyStringNode $propertiesString): void
     {
         $payload = $this->getScopePayload();
 
@@ -363,7 +341,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
         // Stored for error output
         $originalPayload = $payload;
 
-        $expected = explode("\n", (string) $propertiesString);
+        $expected = explode("\n", (string)$propertiesString);
 
         foreach ($expected as $property) {
             PHPUnit::assertArrayHasKey($property, $payload, sprintf(
@@ -391,14 +369,13 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * And the "data" property is an object
      */
-    public function thePropertyIsAnObject($property)
+    public function thePropertyIsAnObject($property): void
     {
         $payload = $this->getScopePayload();
         $actualValue = $this->arrayGet($payload, $property);
 
-        PHPUnit::assertTrue(
-            is_object($actualValue),
-            sprintf("Asserting the [%s] property in current scope [%s] is an object", $property, $this->scope)
+        PHPUnit::assertIsObject(
+            $actualValue, sprintf("Asserting the [%s] property in current scope [%s] is an object", $property, $this->scope)
         );
     }
 
@@ -410,14 +387,13 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * And the "genres" property is an array
      */
-    public function thePropertyIsAnArray($property)
+    public function thePropertyIsAnArray($property): void
     {
         $payload = $this->getScopePayload();
         $actualValue = $this->arrayGet($payload, $property);
 
-        PHPUnit::assertTrue(
-            is_array($actualValue),
-            sprintf("Asserting the [%s] property in current scope [%s] is an array", $property, $this->scope)
+        PHPUnit::assertIsArray(
+            $actualValue, sprintf("Asserting the [%s] property in current scope [%s] is an array", $property, $this->scope)
         );
     }
 
@@ -429,7 +405,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * And the "genres" property is an array with 4 items
      */
-    public function thePropertyIsAnArrayWithItems($property, $count)
+    public function thePropertyIsAnArrayWithItems($property, $count): void
     {
         // Run the regular thePropertyIsAnArray function first
         $this->thePropertyIsAnArray($property);
@@ -452,7 +428,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * And the "genres" property is an empty array
      */
-    public function thePropertyIsAnEmptyArray($property)
+    public function thePropertyIsAnEmptyArray($property): void
     {
         $payload = $this->getScopePayload();
         $scopePayload = $this->arrayGet($payload, $property);
@@ -471,7 +447,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * And the "id" property is an integer
      */
-    public function thePropertyIsAnInteger($property)
+    public function thePropertyIsAnInteger($property): void
     {
         $payload = $this->getScopePayload();
         $actual = $this->arrayGet($payload, $property);
@@ -496,7 +472,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * And the "id" property is an integer equaling 17
      */
-    public function thePropertyIsAIntegerEqualing($property, $expected)
+    public function thePropertyIsAIntegerEqualing($property, $expected): void
     {
         $payload = $this->getScopePayload();
         $actualValue = $this->arrayGet($payload, $property);
@@ -505,7 +481,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
         PHPUnit::assertSame(
             $actualValue,
-            (int) $expected,
+            (int)$expected,
             sprintf("Asserting the [%s] property in current scope [%s] is an integer equaling [%s]", $property, $this->scope, $expected)
         );
     }
@@ -518,7 +494,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * And the "title" property is a string
      */
-    public function thePropertyIsAString($property)
+    public function thePropertyIsAString($property): void
     {
         $payload = $this->getScopePayload();
         $actual = $this->arrayGet($payload, $property);
@@ -539,7 +515,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * And the "title" property is a string equaling "Pulp Fiction"
      */
-    public function thePropertyIsAStringEqualing($property, $expected)
+    public function thePropertyIsAStringEqualing($property, $expected): void
     {
         $payload = $this->getScopePayload();
         $actualValue = $this->arrayGet($payload, $property);
@@ -561,7 +537,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * And the "is_released" property is a boolean
      */
-    public function thePropertyIsABoolean($property)
+    public function thePropertyIsABoolean($property): void
     {
         $payload = $this->getScopePayload();
         $actual = $this->arrayGet($payload, $property);
@@ -582,7 +558,7 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * And the "is_released" property is a boolean equaling true
      */
-    public function thePropertyIsABooleanEqualing($property, $expected)
+    public function thePropertyIsABooleanEqualing($property, $expected): void
     {
         $payload = $this->getScopePayload();
         $actualValue = $this->arrayGet($payload, $property);
@@ -608,21 +584,25 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * And echo last request
      */
-    public function echoLastRequest()
+    public function echoLastRequest(): void
     {
-        $request = $this->client->getLastRequest();
+        $request = $this->browser->getLastRequest();
 
-        echo sprintf("%s %s%s HTTP/%s\n", $request->getMethod(), $request->getHost(), $request->getResource(), $request->getProtocolVersion());
-
-        $headerString = '';
-        foreach ($request->getHeaders() as $header) {
-            $headerString = sprintf("%s%s\n", $headerString, $header);
+        if ($request === null) {
+            throw new Exception('No request has been made yet.');
         }
 
-        echo rtrim($headerString, "\n");
+        echo sprintf(
+            "%s %s HTTP/%s\n",
+            $request->getMethod(),
+            $request->getUri()->getPath(),
+            $request->getProtocolVersion()
+        );
 
-        if (empty($request->getContent()) === false) {
-            echo sprintf("\nContent: %s", $request->getContent());
+        if (count($request->getHeaders()) > 0) {
+            foreach ($request->getHeaders() as $key => $header) {
+                echo sprintf("\n%s: %s", $key, implode(',', $header));
+            }
         }
     }
 
@@ -634,31 +614,39 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
      * Example:
      * And echo last response
      */
-    public function echoLastResponse()
+    public function echoLastResponse(): void
     {
-        $response = $this->client->getLastResponse();
+        $response = $this->browser->getLastResponse();
 
-        $headerString = '';
-        foreach ($response->getHeaders() as $header) {
-            $headerString = sprintf("%s%s\n", $headerString, $header);
+        if ($response === null) {
+            throw new Exception('No response has been sent yet.');
         }
 
-        echo rtrim($headerString, "\n");
+        if (count($response->getHeaders()) > 0) {
+            foreach ($response->getHeaders() as $key => $header) {
+                echo sprintf("%s: %s\n", $key, implode(',', $header));
+            }
+        }
 
-        if (empty($response->getContent()) === false) {
-            echo sprintf("\nContent: %s", $response->getContent());
+        if (empty($this->responseBody) === false && $this->isJson($this->responseBody) === true) {
+            echo sprintf("\n%s", $this->responseBody);
+        }
+    }
+
+    private function isJson(string $string): bool
+    {
+        try {
+            json_decode($string, null, 512, JSON_THROW_ON_ERROR);
+            return true;
+        } catch (\JsonException $e) {
+            return false;
         }
     }
 
     /**
      * Create a payload for the password grant
-     *
-     * @param  string $username
-     * @param  string $password
-     * @param  string $scope
-     * @return array
      */
-    protected function createPasswordGrantPayload($username, $password, $scope = null)
+    protected function createPasswordGrantPayload(string $username, string $password, string $scope = null): array
     {
         if (isset($this->parameters['oauth']) === false) {
             throw new Exception('OAuth details not found in your behat.yml file.');
@@ -666,12 +654,12 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
         $payload = [
             "grant_type" => 'password',
-            "username"   => $username,
-            "password"   => $password,
+            "username" => $username,
+            "password" => $password,
         ];
 
         // Add scope to payload if it is set
-        if (is_null($scope) === false) {
+        if ($scope !== null) {
             $payload['scope'] = $scope;
         }
 
@@ -686,24 +674,21 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
     /**
      * Create a payload for the client credentials grant
-     *
-     * @param  string $scope
-     * @return array
      */
-    public function createClientCredentialsGrantPayload($scope = null)
+    public function createClientCredentialsGrantPayload(string $scope = null): array
     {
         if (isset($this->parameters['oauth']) === false) {
             throw new Exception('OAuth details not found in your behat.yml file.');
         }
 
         $payload = [
-            "grant_type"    => 'client_credentials',
-            "client_id"     => $this->parameters['oauth']['client_id'],
+            "grant_type" => 'client_credentials',
+            "client_id" => $this->parameters['oauth']['client_id'],
             "client_secret" => $this->parameters['oauth']['client_secret'],
         ];
 
         // Add scope to payload if it is set
-        if (is_null($scope) === false) {
+        if ($scope !== null) {
             $payload['scope'] = $scope;
         }
 
@@ -712,21 +697,17 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
     /**
      * Build a payload for the client credentials grant with the given variables
-     *
-     * @param  string $scope
-     *
-     * @return array
      */
-    public function buildClientCredentialsGrantPayload($id, $secret, $scope = null)
+    public function buildClientCredentialsGrantPayload($id, $secret, ?string $scope = null): array
     {
         $payload = [
-            "grant_type"    => 'client_credentials',
-            "client_id"     => $id,
+            "grant_type" => 'client_credentials',
+            "client_id" => $id,
             "client_secret" => $secret,
         ];
 
         // Add scope to payload if it is set
-        if (is_null($scope) === false) {
+        if ($scope !== null) {
             $payload['scope'] = $scope;
         }
 
@@ -735,18 +716,18 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
     /**
      * Send an OAuth request to the API
-     *
-     * @param array $payload [description]
      */
-    protected function sendOauthRequest(array $payload)
+    protected function sendOauthRequest(array $payload): void
     {
         $url = sprintf('%s%s', $this->baseUrl, $this->parameters['oauth']['uri']);
 
-        $this->headers['Content-Type'] = 'application/x-www-form-urlencoded';
-        $response = $this->client->post($url, $this->headers, http_build_query($payload));
-        $responseContent = json_decode($response->getContent());
 
-        // Throw an exception if the statuscode is not 200
+        $this->headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        $response = $this->browser->post($url, $this->headers, http_build_query($payload));
+
+        $responseContent = json_decode($this->responseBody);
+
+        // Throw an exception if the status code is not 200
         if ($response->getStatusCode() !== 200) {
             $errorMessage = 'Authorization Error';
             if (isset($responseContent->error_description) === true) {
@@ -762,10 +743,8 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
     /**
      * Set the authentication token as a bearer token or as a normal access token
-     *
-     * @param string $accessToken
      */
-    protected function setAuthentication($accessToken)
+    protected function setAuthentication(string $accessToken): void
     {
         // Add authorization header if the OAuth config is set to use the bearer authentication scheme
         if ($this->parameters['oauth']['use_bearer_token'] === true) {
@@ -778,14 +757,12 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
     /**
      * Returns the payload from the current scope within the response
-     *
-     * @return mixed
      */
-    protected function getScopePayload()
+    protected function getScopePayload(): mixed
     {
         $payload = $this->getResponsePayload();
 
-        if (is_null($this->scope) === true) {
+        if ($this->scope === null) {
             return $payload;
         }
 
@@ -794,39 +771,11 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
     /**
      * Return the response payload from the current response.
-     *
-     * @return  mixed
      */
-    protected function getResponsePayload()
+    protected function getResponsePayload(): object
     {
-        $json = json_decode($this->getResponse()->getContent());
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            $message = 'Failed to decode JSON body ';
-
-            switch (json_last_error()) {
-                case JSON_ERROR_DEPTH:
-                    $message .= '(Maximum stack depth exceeded).';
-                    break;
-                case JSON_ERROR_STATE_MISMATCH:
-                    $message .= '(Underflow or the modes mismatch).';
-                    break;
-                case JSON_ERROR_CTRL_CHAR:
-                    $message .= '(Unexpected control character found).';
-                    break;
-                case JSON_ERROR_SYNTAX:
-                    $message .= '(Syntax error, malformed JSON).';
-                    break;
-                case JSON_ERROR_UTF8:
-                    $message .= '(Malformed UTF-8 characters, possibly incorrectly encoded).';
-                    break;
-                default:
-                    $message .= '(Unknown error).';
-                    break;
-            }
-
-            throw new Exception($message);
-        }
+        /** @var object $json */
+        $json = json_decode($this->responseBody, false, 512, JSON_THROW_ON_ERROR);
 
         $this->responsePayload = $json;
 
@@ -835,12 +784,10 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
     /**
      * Checks the response exists and returns it.
-     *
-     * @return  \Buzz\Message\Response
      */
-    protected function getResponse()
+    protected function getResponse(): Response
     {
-        if (is_null($this->response) === true) {
+        if ($this->response === null) {
             throw new Exception("The response was not set.");
         }
 
@@ -849,12 +796,10 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
     /**
      * Reset the headers to the default
-     *
-     * @return void
      */
-    protected function resetHeaders()
+    protected function resetHeaders(): void
     {
-        $this->headers = array();
+        $this->headers = [];
 
         $headers = [
             'Content-Type' => 'application/json',
@@ -867,22 +812,16 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
 
     /**
      * Add a header
-     *
-     * @param string $headerName
-     * @param string $headerValue
      */
-    protected function addHeader($headerName, $headerValue)
+    protected function addHeader(string $headerName, string $headerValue): void
     {
         $this->headers[$headerName] = $headerValue;
     }
 
     /**
      * Check if a header exists
-     *
-     * @param  string  $headerName
-     * @return boolean
      */
-    protected function hasHeader($headerName)
+    protected function hasHeader(string $headerName): bool
     {
         return isset($this->headers[$headerName]);
     }
@@ -890,26 +829,23 @@ class JsonApiContext implements SnippetAcceptingContext, JsonApiAwareInterface
     /**
      * Get an item from an array using "dot" notation
      *
-     * @link   http://laravel.com/docs/helpers
-     * @param  array   $array
-     * @param  string  $key
-     * @return mixed
+     * @link http://laravel.com/docs/helpers
      */
-    protected function arrayGet($array, $key)
+    protected function arrayGet(array|object $array, ?string $key): mixed
     {
-        if (is_null($key) === true) {
+        if ($key === null) {
             return $array;
         }
 
         foreach (explode('.', $key) as $segment) {
             if (is_object($array) === true) {
                 if (isset($array->{$segment}) === false) {
-                    return;
+                    return null;
                 }
                 $array = $array->{$segment};
             } elseif (is_array($array) === true) {
                 if (array_key_exists($segment, $array) === false) {
-                    return;
+                    return null;
                 }
                 $array = $array[$segment];
             }
